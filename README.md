@@ -91,15 +91,15 @@ Key format
 
 The key is returned as a 128-character base-64 encoded string, in Colin Percival’s [standard file header format](https://github.com/Tarsnap/scrypt/blob/master/FORMAT):
 
-offset | length | value
-------:|-------:|:-----
-     0 |      6 | ‘scrypt’
-     6 |      1 | version [0]
-     7 |      1 | log2(N)
-     8 |      4 | r (big-endian integer)
-    12 |      4 | p (big-endian integer)
-    16 |     32 | salt
-    48 |     16 | checksum: first 16 bytes of SHA256(bytes 0–47)
-    64 |     32 | HMAC-SHA256(bytes 0–63), with scrypt(password, salt, 64, { N, r, p }) as key
+| offset | length | value
+| -----: | -----: | :----
+|      0 |      6 | ‘scrypt’
+|      6 |      1 | version [0]
+|      7 |      1 | log2(N)
+|      8 |      4 | r (big-endian integer)
+|     12 |      4 | p (big-endian integer)
+|     16 |     32 | salt
+|     48 |     16 | checksum: first 16 bytes of SHA256(bytes 0–47)
+|     64 |     32 | HMAC-SHA256(bytes 0–63), with scrypt(password, salt, 64, { N, r, p }) as key
 
 The key will always begin with *c2NyeXB0*, as this is ‘scrypt’ encoded as base-64.
