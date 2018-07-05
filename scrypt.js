@@ -36,7 +36,7 @@ class Scrypt {
      * @returns {string} Derived key (base-64 encoded).
      *
      * @example
-     *   const key = Scrypt.kdf('my secret password', { logN: 15 });
+     *   const key = await Scrypt.kdf('my secret password', { logN: 15 });
      */
     static async kdf(passphrase, params) {
         if (typeof passphrase != 'string') throw new TypeError('Passphrase must be a string');
@@ -120,7 +120,7 @@ class Scrypt {
      * @returns {boolean} True if key was generated from passphrase.
      *
      * @example
-     *   const ok = Scrypt.verify(key, 'my secret password'; // => true
+     *   const ok = await Scrypt.verify(key, 'my secret password');
      */
     static async verify(key, passphrase) {
         if (typeof key != 'string') throw new TypeError('Key must be a string');
@@ -239,7 +239,7 @@ class Scrypt {
      * @returns {Object} Scrypt parameters logN, r, p.
      *
      * @example
-     *   const params = pickParams(0.1); // => e.g. { logN: 15, r: 8, p: 1 }
+     *   const params = Scrypt.pickParams(0.1); // => e.g. { logN: 15, r: 8, p: 1 }
      */
     static pickParams(maxtime, maxmem=os.totalmem(), maxmemfrac=0.5) {
         if (maxmem==0 || maxmem==null) maxmem = os.totalmem();
