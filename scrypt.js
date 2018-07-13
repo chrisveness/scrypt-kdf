@@ -176,7 +176,7 @@ class Scrypt {
 
             return true;
         } catch (e) {
-            return false; // ???
+            throw new Error(e); // localise error to this function [can't happen?]
         }
     }
 
