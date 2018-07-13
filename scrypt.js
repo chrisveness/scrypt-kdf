@@ -20,6 +20,7 @@ const os          = require('os');                     // nodejs.org/api/os.html
 const TextEncoder = require('util').TextEncoder;       // nodejs.org/api/util.html
 const promisify   = require('util').promisify;         // nodejs.org/api/util.html
 
+if (crypto.scrypt == undefined) throw new Error('crypto.scrypt not found: Node.js v10.5.0+ required');
 crypto.scrypt = promisify(crypto.scrypt);
 
 
