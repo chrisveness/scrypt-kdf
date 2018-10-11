@@ -4,7 +4,7 @@
   "keywords": "crypto scrypt kdf password hash login authenticate verify",
   "author": "Chris Veness",
   "repository": { "type": "git", "url": "https://github.com/chrisveness/scrypt-kdf" },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "main": "scrypt.js",
   "engineStrict": ">=10.5.0",
@@ -15,10 +15,10 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "chai": "^4.1.2",
-    "eslint": "^5.0.1",
+    "chai": "^4.2.0",
+    "eslint": "^5.6.1",
     "mocha": "^5.2.0",
-    "nyc": "^12.0.2"
+    "nyc": "^13.0.1"
   },
   "eslintConfig": {
     "env": {
