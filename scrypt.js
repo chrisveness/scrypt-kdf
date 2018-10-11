@@ -53,8 +53,9 @@ class Scrypt {
         const p = Math.round(params.p);
         if (isNaN(logN) || logN != params.logN) throw new RangeError(`Parameter logN must be an integer; received ${params.logN}`);
         if (logN < 1 || logN > 30) throw new RangeError(`Parameter logN must be between 1 and 30; received ${params.logN}`);
-        if (isNaN(r) || r != params.r) throw new RangeError(`Parameter r must be an integer; received ${params.r}`);
-        if (isNaN(p) || p != params.p) throw new RangeError(`Parameter p must be an integer; received ${params.p}`);
+        if (isNaN(r) || r != params.r || r <= 0) throw new RangeError(`Parameter r must be a positive integer; received ${params.r}`);
+        if (isNaN(p) || p != params.p || p <= 0) throw new RangeError(`Parameter p must be a positive integer; received ${params.p}`);
+        if (p > (2**30-1)/r) throw new RangeError(`Parameters p*r must be <= 2^30-1`);
 
         // the derived key is 96 bytes: use an ArrayBuffer to view it in different formats
         const buffer = new ArrayBuffer(96);

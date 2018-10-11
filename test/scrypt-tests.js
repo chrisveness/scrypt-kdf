@@ -96,9 +96,12 @@ describe('Scrypt tests', function() {
             it('throws on bad logN', () => Scrypt.kdf(password, { logN: 'bad' }).catch(error => expect(error.message).to.equal('Parameter logN must be an integer; received bad')));
             it('throws on zero logN', () => Scrypt.kdf(password, { logN: 0 }).catch(error => expect(error.message).to.equal('Parameter logN must be between 1 and 30; received 0')));
             it('throws on non-integer logN', () => Scrypt.kdf(password, { logN: 12.12 }).catch(error => expect(error.message).to.equal('Parameter logN must be an integer; received 12.12')));
-            it('throws on non-integer r', () => Scrypt.kdf(password, { logN: 12,  r: 8.8 }).catch(error => expect(error.message).to.equal('Parameter r must be an integer; received 8.8')));
-            it('throws on non-integer p', () => Scrypt.kdf(password, { logN: 12,  p: 1.1 }).catch(error => expect(error.message).to.equal('Parameter p must be an integer; received 1.1')));
-            it('throws on out-of-range r', () => Scrypt.kdf(password, { logN: 12,  r: 2**31 }).catch(error => expect(error.message).to.equal('RangeError [ERR_OUT_OF_RANGE]: The value of "r" is out of range. It must be >= 0 && <= 2147483647. Received 2147483648')));
+            it('throws on non-integer r', () => Scrypt.kdf(password, { logN: 12,  r: 8.8 }).catch(error => expect(error.message).to.equal('Parameter r must be a positive integer; received 8.8')));
+            it('throws on non-integer p', () => Scrypt.kdf(password, { logN: 12,  p: 1.1 }).catch(error => expect(error.message).to.equal('Parameter p must be a positive integer; received 1.1')));
+            it('throws on 0 r', () => Scrypt.kdf(password, { logN: 12,  r: 0 }).catch(error => expect(error.message).to.equal('Parameter r must be a positive integer; received 0')));
+            it('throws on 0 p', () => Scrypt.kdf(password, { logN: 12,  p: 0 }).catch(error => expect(error.message).to.equal('Parameter p must be a positive integer; received 0')));
+            it('throws on out-of-range r', () => Scrypt.kdf(password, { logN: 12,  r: 2**30 }).catch(error => expect(error.message).to.equal('Parameters p*r must be <= 2^30-1')));
+            it('throws on out-of-range p', () => Scrypt.kdf(password, { logN: 12,  p: 2**30 }).catch(error => expect(error.message).to.equal('Parameters p*r must be <= 2^30-1')));
         });
 
         describe('verify errors', function() {
