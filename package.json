@@ -7,6 +7,7 @@
   "version": "1.0.1",
   "license": "MIT",
   "main": "scrypt.js",
+  "types": "scrypt.d.ts",
   "engineStrict": ">=10.5.0",
   "scripts": {
     "test": "mocha --exit test/scrypt-tests.js",
