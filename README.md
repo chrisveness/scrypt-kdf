@@ -1,4 +1,4 @@
-[![Build status](https://img.shields.io/travis/chrisveness/scrypt-kdf/master.svg?maxAge=2592000)](https://travis-ci.org/chrisveness/scrypt-kdf)
+[![Build Status](https://travis-ci.org/chrisveness/scrypt-kdf.svg?branch=master)](https://travis-ci.org/chrisveness/scrypt-kdf)
 
 Scrypt Key Derivation Function
 ==============================
