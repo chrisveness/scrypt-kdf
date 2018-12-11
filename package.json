@@ -1,21 +1,13 @@
 {
   "name": "scrypt-kdf",
   "description": "Scrypt Key Derivation Function",
-  "keywords": [
-    "crypto",
-    "scrypt",
-    "kdf",
-    "password",
-    "hash",
-    "login",
-    "authenticate",
-    "verify"
-  ],
+  "keywords": [ "crypto", "scrypt", "kdf", "password", "hash", "login", "authenticate", "verify" ],
   "author": "Chris Veness",
   "repository": { "type": "git", "url": "https://github.com/chrisveness/scrypt-kdf" },
   "version": "1.0.1",
   "license": "MIT",
   "main": "scrypt.js",
+  "types": "scrypt.d.ts",
   "engines": {
     "node": ">=10.5.0"
   },
