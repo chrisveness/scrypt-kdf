@@ -13,40 +13,38 @@ const key0salt = 'c2NyeXB0AAwAAAAIAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 describe('Scrypt tests', function() {
 
-    describe('Hash', function() {
-        it('just logN param', async function() {
+    describe('Hash & verify', function() {
+        it('with just logN param', async function() {
             const key = await Scrypt.kdf(password, { logN: 12 });
             expect(Scrypt.viewParams(key)).to.deep.equal({ logN: 12, r: 8, p: 1 });
             expect(await Scrypt.verify(key, password)).to.be.true;
         });
 
-        it('logN, r, p params', async function() {
+        it('with logN, r, p params', async function() {
             const key = await Scrypt.kdf(password, { logN: 12, r: 9, p: 2 });
             expect(Scrypt.viewParams(key)).to.deep.equal({ logN: 12, r: 9, p: 2 });
             expect(await Scrypt.verify(key, password)).to.be.true;
         });
 
-        it('accepts params as strings', async function() {
+        it('with params as strings', async function() {
             const key = await Scrypt.kdf(password, { logN: '12', r: '8', p: '1' });
             expect(Scrypt.viewParams(key)).to.deep.equal({ logN: 12, r: 8, p: 1 });
             expect(await Scrypt.verify(key, password)).to.be.true;
         });
 
-        it('bad passphrase', async function() {
+        it('fails to verify with bad passphrase', async function() {
             const key = await Scrypt.kdf(password, { logN: 12 });
             expect(await Scrypt.verify(key, 'wrong password')).to.be.false;
         });
     });
 
-    describe('Verify', function() {
+    describe('Verify previous key', function() {
         it('verifies null-salt key', async function() {
-            const ok = await Scrypt.verify(key0salt, password);
-            expect(ok).to.be.true;
+            expect(await Scrypt.verify(key0salt, password)).to.be.true;
         });
 
-        it('fails to verify with bad password', async function() {
-            const ok = await Scrypt.verify(key0salt, 'bad password');
-            expect(ok).to.be.false;
+        it('fails to verify null-salt key with bad passphrase', async function() {
+            expect(await Scrypt.verify(key0salt, 'wrong password')).to.be.false;
         });
     });
 
@@ -136,6 +134,7 @@ describe('Scrypt tests', function() {
 
         describe('verify errors', function() {
             it('throws on bad key type', async () => Scrypt.verify(await Scrypt.kdf(password, { logN: 12 }), null)
+                .then(() => { throw new Error('Test should fail'); })
                 .catch(error => expect(error.message).to.equal('Passphrase must be a string')));
             it('throws on bad key type', () => Scrypt.verify(null, 'passwd')
                 .then(() => { throw new Error('Test should fail'); })
@@ -143,7 +142,7 @@ describe('Scrypt tests', function() {
             it('throws on bad key', () => Scrypt.verify('key', 'passwd')
                 .then(() => { throw new Error('Test should fail'); })
                 .catch(error => expect(error.message).to.equal('Invalid key')));
-            it('throws on checksum failure', async () => {
+            it('fails to verify on checksum failure', async () => {
                 const keyBuff = Buffer.from(await Scrypt.kdf(password, { logN: 12 }), 'base64');
                 keyBuff[7] = 11; // patch logN to new value
                 const keybis = keyBuff.toString('base64');
@@ -152,10 +151,10 @@ describe('Scrypt tests', function() {
             });
         });
 
-        describe('viewParams errors', function() {
+        describe('viewParams errors', function() { // note Scrypt.viewParams is not async
             it('throws on null key', () => expect(() => Scrypt.viewParams(null)).to.throw(TypeError, 'Key must be a string'));
-            it('throws on numeric key', () => expect(() => Scrypt.viewParams(99).to.throw(TypeError, 'Key must be a string')));
-            it('throws on invalid key', () => expect(() => Scrypt.viewParams('bad key').to.throw(RangeError, 'Invalid key')));
+            it('throws on numeric key', () => expect(() => Scrypt.viewParams(99)).to.throw(TypeError, 'Key must be a string'));
+            it('throws on invalid key', () => expect(() => Scrypt.viewParams('bad key')).to.throw(RangeError, 'Invalid key'));
         });
 
     });
