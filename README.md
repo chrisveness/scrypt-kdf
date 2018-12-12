@@ -40,6 +40,15 @@ Example usage
     const key = await Scrypt.kdf('my secret password', { logN: 15 });
     const ok = await Scrypt.verify(key, 'my secret password'); // => true
 
+### ES modules
+
+If using ES modules (for instance with the [esm](https://www.npmjs.com/package/esm) package), use
+
+    import Scrypt from 'scrypt-kdf';
+
+in place of
+
+    const Scrypt = require('scrypt-kdf');
 
 API
 ---
