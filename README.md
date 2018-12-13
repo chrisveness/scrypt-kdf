@@ -1,7 +1,7 @@
-[![Build Status](https://travis-ci.org/chrisveness/scrypt-kdf.svg?branch=master)](https://travis-ci.org/chrisveness/scrypt-kdf)
-
 Scrypt Key Derivation Function
 ==============================
+
+[![Build Status](https://travis-ci.org/chrisveness/scrypt-kdf.svg?branch=master)](https://travis-ci.org/chrisveness/scrypt-kdf)
 
 Scrypt is a *password-based [key derivation function](https://en.wikipedia.org/wiki/Key_derivation_function)*, useful for storing password hashes for verifying interactive logins.
 

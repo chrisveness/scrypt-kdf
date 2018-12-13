@@ -21,8 +21,8 @@ export interface ScryptParams {
 /**
  * Produce derived key using scrypt as a key derivation function.
  *
- * @param passphrase secret value such as a password from which key is to be derived.
- * @param params scrypt parameters.
+ * @param passphrase Secret value such as a password from which key is to be derived.
+ * @param params Scrypt parameters.
  * @returns Derived key (base-64 encoded).
  *
  * @example
@@ -45,7 +45,7 @@ export declare function verify(key: string, passphrase: string): Promise<boolean
 /**
  * View scrypt parameters which were used to derive key.
  *
- * @param key
+ * @param key Derived base64 key obtained from Scrypt.kdf().
  * @returns Scrypt parameters logN, r, p.
  *
  * @example
@@ -61,9 +61,9 @@ export declare function viewParams(key: string): ScryptParams;
  *
  * Returned parameters may vary depending on computer specs & current loading.
  *
- * @param maxtime maximum time in seconds scrypt will spend computing the derived key.
- * @param maxmem maximum bytes of RAM used when computing the derived encryption key.
- * @param maxmemfrac fraction of the available RAM used when computing the derived key.
+ * @param maxtime Maximum time in seconds scrypt will spend computing the derived key.
+ * @param maxmem Maximum bytes of RAM used when computing the derived encryption key.
+ * @param maxmemfrac Fraction of the available RAM used when computing the derived key.
  * @returns Scrypt parameters logN, r, p.
  *
  * @example

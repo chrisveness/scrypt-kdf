@@ -29,8 +29,8 @@ class Scrypt {
     /**
      * Produce derived key using scrypt as a key derivation function.
      *
-     * @param   {string}   passphrase - secret value such as a password from which key is to be derived.
-     * @param   {Object}   params - scrypt parameters.
+     * @param   {string}   passphrase - Secret value such as a password from which key is to be derived.
+     * @param   {Object}   params - Scrypt parameters.
      * @param   {number}   params.logN - CPU/memory cost parameter.
      * @param   {number=8} params.r - Block size parameter.
      * @param   {number=1} params.p - Parallelization parameter.
@@ -186,7 +186,7 @@ class Scrypt {
     /**
      * View scrypt parameters which were used to derive key.
      *
-     * @param {string} key
+     * @param {string} key - Derived base64 key obtained from Scrypt.kdf().
      * @returns {Object} Scrypt parameters logN, r, p.
      *
      * @example
@@ -235,9 +235,9 @@ class Scrypt {
      *
      * Returned parameters may vary depending on computer specs & current loading.
      *
-     * @param   {number}          maxtime - maximum time in seconds scrypt will spend computing the derived key.
-     * @param   {number=availMem} maxmem - maximum bytes of RAM used when computing the derived encryption key.
-     * @param   {number=0.5}      maxmemfrac - fraction of the available RAM used when computing the derived key.
+     * @param   {number}          maxtime - Maximum time in seconds scrypt will spend computing the derived key.
+     * @param   {number=availMem} maxmem - Maximum bytes of RAM used when computing the derived encryption key.
+     * @param   {number=0.5}      maxmemfrac - Fraction of the available RAM used when computing the derived key.
      * @returns {Object} Scrypt parameters logN, r, p.
      *
      * @example
