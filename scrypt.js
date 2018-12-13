@@ -29,7 +29,7 @@ class Scrypt {
     /**
      * Produce derived key using scrypt as a key derivation function.
      *
-     * @param   {string}   passphrase - Secret value such as a password from which key is to be derived.
+     * @param   {string|TypedArray|Buffer} passphrase - Secret value such as a password from which key is to be derived.
      * @param   {Object}   params - Scrypt parameters.
      * @param   {number}   params.logN - CPU/memory cost parameter.
      * @param   {number=8} params.r - Block size parameter.
@@ -40,7 +40,7 @@ class Scrypt {
      *   const key = await Scrypt.kdf('my secret password', { logN: 15 });
      */
     static async kdf(passphrase, params) {
-        if (typeof passphrase != 'string') throw new TypeError('Passphrase must be a string');
+        if (typeof passphrase!='string' && !ArrayBuffer.isView(passphrase)) throw new TypeError('Passphrase must be a string, TypedArray, or Buffer');
         if (typeof params != 'object' || params == null) throw new TypeError('Params must be an object');
 
         // defaults for r, p
@@ -118,7 +118,7 @@ class Scrypt {
      * Check whether key was generated from passphrase.
      *
      * @param {string} key - Derived base64 key obtained from Scrypt.kdf().
-     * @param {string} passphrase - Passphrase originally used to generate key.
+     * @param {string|TypedArray|Buffer} passphrase - Passphrase originally used to generate key.
      * @returns {boolean} True if key was generated from passphrase.
      *
      * @example
@@ -126,8 +126,8 @@ class Scrypt {
      */
     static async verify(key, passphrase) {
         if (typeof key != 'string') throw new TypeError('Key must be a string');
-        if (typeof passphrase != 'string') throw new TypeError('Passphrase must be a string');
         if (key.length != 128) throw new RangeError('Invalid key');
+        if (typeof passphrase!='string' && !ArrayBuffer.isView(passphrase)) throw new TypeError('Passphrase must be a string, TypedArray, or Buffer');
 
         // the derived key is 96 bytes: use an ArrayBuffer to view it in different formats
         const buffer = new ArrayBuffer(96);

@@ -28,7 +28,7 @@ export interface ScryptParams {
  * @example
  *   const key = await Scrypt.kdf('my secret password', { logN: 15 });
  */
-export declare function kdf(passphrase: string, params: Readonly<ScryptParams>): Promise<string>;
+export declare function kdf(passphrase: string|ArrayBufferView, params: Readonly<ScryptParams>): Promise<string>;
 
 /**
  * Check whether key was generated from passphrase.
@@ -40,7 +40,7 @@ export declare function kdf(passphrase: string, params: Readonly<ScryptParams>):
  * @example
  *   const ok = await Scrypt.verify(key, 'my secret password');
  */
-export declare function verify(key: string, passphrase: string): Promise<boolean>;
+export declare function verify(key: string, passphrase: string|ArrayBufferView): Promise<boolean>;
 
 /**
  * View scrypt parameters which were used to derive key.

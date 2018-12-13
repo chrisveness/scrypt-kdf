@@ -5,6 +5,9 @@
 ### Added
 - Add TypeScript declaration file
 
+### Changed
+- Accept passphrase as TypedArray or Buffer
+
 ## [1.0.1] - 2018-10-11
 
 ### Changed
