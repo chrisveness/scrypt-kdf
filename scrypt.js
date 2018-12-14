@@ -109,7 +109,7 @@ class Scrypt {
 
             return base64;
         } catch (e) {
-            throw new Error(e); // localise error to this function
+            throw new Error(e); // e.g. memory limit exceeded; localise error to this function
         }
     }
 

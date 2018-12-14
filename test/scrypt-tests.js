@@ -146,6 +146,9 @@ describe('Scrypt tests', function() {
             it('throws on out-of-range p', () => Scrypt.kdf(password, { logN: 12,  p: 2**30 })
                 .then(() => { throw new Error('Test should fail'); })
                 .catch(error => expect(error.message).to.equal('Parameters p*r must be <= 2^30-1')));
+            it('throws on EVP PBE memory limit exceeded', () => Scrypt.kdf(password, { logN: 12,  r: 2**20 })
+                .then(() => { throw new Error('Test should fail'); })
+                .catch(error => expect(error.message).to.match(/EVP_PBE_scrypt:memory limit exceeded$/)));
         });
 
         describe('verify errors', function() {
