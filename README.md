@@ -83,7 +83,7 @@ API
 
 `Scrypt.pickParams(maxtime, maxmem, maxmemfrac)` – return scrypt parameters for given operational parameters.
 
-- `maxtime` is the maximum time in seconds scrypt will spend computing the derived encyption key from the password (0.1 seconds is recommended for interactive logins).
+- `maxtime` is the maximum time in seconds scrypt will spend computing the derived encryption key from the password (0.1 seconds is recommended for interactive logins).
 - `maxmem` (optional) is the maximum RAM scrypt will use when computing the derived encryption key, in bytes (default maximum available physical memory).
 - `maxmemfrac` (optional) is the maximum fraction of available RAM scrypt will use for computing the derived encryption key (default 0.5); if not within the range 0 < maxmemfrac <= 0.5, this will be set to 0.5.
 - returns `{ logN, r, p }` object.
