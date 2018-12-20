@@ -12,7 +12,7 @@ Scrypt is a ‘memory-hard’ algorithm, meaning that it will produce keys (hash
 
 It was originally developed by Colin Percival as part of the [Tarsnap](http://www.tarsnap.com/scrypt.html) file encryption utility. It is fully described in Percival’s paper [Stronger Key Derivation via Sequential Memory-Hard Functions](http://www.tarsnap.com/scrypt/scrypt.pdf), and is specified in [RFC 7841](https://tools.ietf.org/html/rfc7914).
 
-`scrypt-kdf` is a Node.js zero-dependency wrapper around the OpenSSL implementation of scrypt, providing a `kdf` function and a `verify` function.
+`scrypt-kdf` is a Node.js zero-dependency wrapper around the core Node.js OpenSSL implementation of scrypt, providing a `kdf` function and a `verify` function.
 
 - the `kdf(passphrase, params)` function returns a key (together with scrypt parameters and salt), which can be stored for later verification
 - the `verify(key, passphrase)` function verifies that the stored key was derived from the supplied password.
