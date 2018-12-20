@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.1.0] - 2018-12-20
 
 ### Added
 - Add TypeScript declaration file
