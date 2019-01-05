@@ -117,7 +117,7 @@ class Scrypt {
     /**
      * Check whether key was generated from passphrase.
      *
-     * @param {string} key - Derived base64 key obtained from Scrypt.kdf().
+     * @param {string|TypedArray|Buffer} key - Derived key obtained from Scrypt.kdf().
      * @param {string|TypedArray|Buffer} passphrase - Passphrase originally used to generate key.
      * @returns {boolean} True if key was generated from passphrase.
      *
@@ -125,16 +125,18 @@ class Scrypt {
      *   const ok = await Scrypt.verify(key, 'my secret password');
      */
     static async verify(key, passphrase) {
-        if (typeof key != 'string') throw new TypeError('Key must be a string');
-        if (key.length != 128) throw new RangeError('Invalid key');
-        if (typeof passphrase!='string' && !ArrayBuffer.isView(passphrase)) throw new TypeError('Passphrase must be a string, TypedArray, or Buffer');
+        if (typeof key !== 'string' && !ArrayBuffer.isView(key)) throw new TypeError('Key must be a string, TypedArray, or Buffer');
+        if (typeof passphrase !== 'string' && !ArrayBuffer.isView(passphrase)) throw new TypeError('Passphrase must be a string, TypedArray, or Buffer');
+
+        const keyBuf = typeof key === 'string' ? Buffer.from(key, 'base64') : Buffer.from(key);
+        if (keyBuf.byteLength !== 96) throw new RangeError('Invalid key');
 
         // the derived key is 96 bytes: use an ArrayBuffer to view it in different formats
         const buffer = new ArrayBuffer(96);
 
         // a linear byte-stream view of the derived key
         const linear = new Uint8Array(buffer, 0, 96);
-        linear.set(Buffer.from(key, 'base64'));
+        linear.set(keyBuf);
 
         // a structured view of the derived key
         const struct = {
@@ -194,15 +196,17 @@ class Scrypt {
      *   const params = Scrypt.viewParams(key); // => { logN: 15, r: 8, p: 1 }
      */
     static viewParams(key) {
-        if (typeof key != 'string') throw new TypeError('Key must be a string');
-        if (key.length != 128) throw new RangeError('Invalid key');
+        if (typeof key !== 'string' && !ArrayBuffer.isView(key)) throw new TypeError('Key must be a string, TypedArray, or Buffer');
+
+        const keyBuf = typeof key === 'string' ? Buffer.from(key, 'base64') : key;
+        if (keyBuf.byteLength !== 96) throw new RangeError('Invalid key');
 
         // the derived key is 96 bytes: use an ArrayBuffer to view it in different formats
         const buffer = new ArrayBuffer(96);
 
         // a linear byte-stream view of the derived key
         const linear = new Uint8Array(buffer, 0, 96);
-        linear.set(Buffer.from(key, 'base64'));
+        linear.set(keyBuf);
 
         // a structured view of the derived key
         const struct = {

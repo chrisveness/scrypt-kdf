@@ -64,6 +64,24 @@ describe('Scrypt tests', function() {
         });
     });
 
+    describe('TypedArray/Buffer key', function() {
+        it('Uint8Array', async function() {
+            const pwTypedArray = new Uint8Array([ 99, 98, 97, 96, 95, 94, 94, 92, 91 ]);
+            const base64Key = await Scrypt.kdf(pwTypedArray, { logN: 12 });
+            const key = new Uint8Array(Buffer.from(base64Key, 'base64'));
+            expect(Scrypt.viewParams(key)).to.deep.equal({ logN: 12, r: 8, p: 1 });
+            expect(await Scrypt.verify(key, pwTypedArray)).to.be.true;
+        });
+
+        it('Buffer', async function() {
+            const pwTypedArray = new Uint8Array([ 99, 98, 97, 96, 95, 94, 94, 92, 91 ]);
+            const base64Key = await Scrypt.kdf(pwTypedArray, { logN: 12 });
+            const key = Buffer.from(base64Key, 'base64');
+            expect(Scrypt.viewParams(key)).to.deep.equal({ logN: 12, r: 8, p: 1 });
+            expect(await Scrypt.verify(key, pwTypedArray)).to.be.true;
+        });
+    });
+
     describe('Pick params', function() {
         it('Picks params for 100ms', async function() {
             const params = await Scrypt.pickParams(0.1, 1024*1024*1024, 0.5);
@@ -157,7 +175,7 @@ describe('Scrypt tests', function() {
                 .catch(error => expect(error.message).to.equal('Passphrase must be a string, TypedArray, or Buffer')));
             it('throws on bad key type', () => Scrypt.verify(null, 'passwd')
                 .then(() => { throw new Error('Test should fail'); })
-                .catch(error => expect(error.message).to.equal('Key must be a string')));
+                .catch(error => expect(error.message).to.equal('Key must be a string, TypedArray, or Buffer')));
             it('throws on bad key', () => Scrypt.verify('key', 'passwd')
                 .then(() => { throw new Error('Test should fail'); })
                 .catch(error => expect(error.message).to.equal('Invalid key')));
