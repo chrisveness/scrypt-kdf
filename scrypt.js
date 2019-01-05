@@ -21,7 +21,7 @@ const TextEncoder = require('util').TextEncoder;       // nodejs.org/api/util.ht
 const promisify   = require('util').promisify;         // nodejs.org/api/util.html
 
 if (crypto.scrypt == undefined) throw new Error('crypto.scrypt not found: Node.js v10.5.0+ required');
-crypto.scrypt = promisify(crypto.scrypt);
+const cryptoScrypt = promisify(crypto.scrypt);
 
 
 class Scrypt {
@@ -96,7 +96,7 @@ class Scrypt {
                 maxmem: 2**31-1, // 2GB is maximum maxmem allowed
             };
             // apply scrypt kdf to salt to derive hmac key
-            const hmacKey = await crypto.scrypt(passphrase, struct.salt, 64, params);
+            const hmacKey = await cryptoScrypt(passphrase, struct.salt, 64, params);
 
             // get hmachash of params, salt, & checksum, using 1st 32 bytes of scrypt hash as key
             const prefix64 = new Uint8Array(buffer,  0, 64);
@@ -167,7 +167,7 @@ class Scrypt {
             };
 
             // apply scrypt kdf to salt to derive hmac key
-            const hmacKey = await crypto.scrypt(passphrase, struct.salt, 64, params);
+            const hmacKey = await cryptoScrypt(passphrase, struct.salt, 64, params);
 
             // get hmachash of params, salt, & checksum, using 1st 32 bytes of scrypt hash as key
             const prefix64 = new Uint8Array(buffer, 0, 64);
