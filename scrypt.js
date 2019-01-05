@@ -155,7 +155,7 @@ class Scrypt {
         const prefix48 = new Uint8Array(buffer,  0, 48);
         const checksum = crypto.createHash('sha256').update(prefix48).digest().slice(0, 16);
 
-        if (checksum.toString('base64') != Buffer.from(struct.checksum).toString('base64')) return false;
+        if (!crypto.timingSafeEqual(checksum, struct.checksum)) return false;
 
         // rehash scrypt-derived key
         try {
@@ -174,9 +174,7 @@ class Scrypt {
             const hmacHash = crypto.createHmac('sha256', hmacKey.slice(32)).update(prefix64).digest();
 
             // verify hash
-            if (hmacHash.toString('base64') != Buffer.from(struct.hmachash).toString('base64')) return false;
-
-            return true;
+            return crypto.timingSafeEqual(hmacHash, struct.hmachash);
         } catch (e) {
             throw new Error(e); // localise error to this function [can't happen?]
         }
