@@ -5,6 +5,10 @@
 
 const expect = require('chai').expect; // BDD/TDD assertion library
 
+const crypto = require('crypto');
+// capture reference before loading scrypt-kdf
+const cryptoScrypt = crypto.scrypt;
+
 const Scrypt = require('../scrypt.js');
 
 const password = 'my secret password';
@@ -178,4 +182,7 @@ describe('Scrypt tests', function() {
 
     });
 
+    it('does not modify crypto.scrypt', function() {
+        expect(crypto.scrypt).to.equal(cryptoScrypt);
+    });
 });
