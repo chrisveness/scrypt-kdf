@@ -12,12 +12,10 @@ Scrypt is a ‘memory-hard’ algorithm, meaning that it will produce keys (hash
 
 It was originally developed by Colin Percival as part of the [Tarsnap](http://www.tarsnap.com/scrypt.html) file encryption utility. It is fully described in Percival’s paper [Stronger Key Derivation via Sequential Memory-Hard Functions](http://www.tarsnap.com/scrypt/scrypt.pdf), and is specified in [RFC 7841](https://tools.ietf.org/html/rfc7914).
 
-`scrypt-kdf` is a Node.js zero-dependency wrapper around the core Node.js OpenSSL implementation of scrypt, providing a `kdf` function and a `verify` function.
+`scrypt-kdf` is a Node.js zero-dependency wrapper around the core [Node.js OpenSSL](https://nodejs.org/api/crypto.html#crypto_crypto_scrypt_password_salt_keylen_options_callback) implementation of scrypt, providing a `kdf` function and a `verify` function.
 
 - the `kdf(passphrase, params)` function returns a key (together with scrypt parameters and salt), which can be stored for later verification
 - the `verify(key, passphrase)` function verifies that the stored key was derived from the supplied password.
-
-`scrypt-kdf` requires Node.js [10.5.0](https://nodejs.org/en/blog/release/v10.5.0/) or above.
 
 
 Example usage
@@ -96,6 +94,19 @@ OpenSSL implementation
 ----------------------
 
 `scrypt-kdf` is a wrapper around the [OpenSSL](https://www.openssl.org/docs/manmaster/man7/scrypt.html) implementation of scrypt made available through the Node.js [crypto module](https://nodejs.org/api/crypto.html#crypto_crypto_scrypt_password_salt_keylen_options_callback).
+
+Scrypt was introduced into Node.js in [v10.5.0](https://nodejs.org/en/blog/release/v10.5.0/), so `scrypt-kdf` requires Node.js v10.5.0 or above; if you want to use it with Node.js < 10.5.0, you can polyfill the OpenSSL scrypt with [scrypt-async](https://www.npmjs.com/package/scrypt-async) using the following:
+
+    const crypto = require('crypto');
+    if (!crypto.scrypt) {
+        const scrypt = require('scrypt-async');
+        crypto.scrypt = function(password, salt, keylen, options, callback) {
+            const opt = Object.assign({}, options, { dkLen: keylen });
+            scrypt(password, salt, opt, (derivedKey) => callback(null, Buffer.from(derivedKey))); 
+        };
+    }
+
+`Scrypt.pickParams()` will not be available with this polyfill.
 
 
 Key format
