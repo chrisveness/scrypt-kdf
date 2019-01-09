@@ -40,7 +40,7 @@ export declare function kdf(passphrase: string|ArrayBufferView, params: Readonly
  * @example
  *   const ok = await Scrypt.verify(key, 'my secret password');
  */
-export declare function verify(key: Buffer, passphrase: string|ArrayBufferView): Promise<boolean>;
+export declare function verify(key: Uint8Array, passphrase: string|ArrayBufferView): Promise<boolean>;
 
 /**
  * View scrypt parameters which were used to derive key.
@@ -52,7 +52,7 @@ export declare function verify(key: Buffer, passphrase: string|ArrayBufferView):
  *   const key = await Scrypt.kdf('my secret password', { logN: 15 } );
  *   const params = Scrypt.viewParams(key); // => { logN: 15, r: 8, p: 1 }
  */
-export declare function viewParams(key: string): ScryptParams;
+export declare function viewParams(key: Uint8Array): ScryptParams;
 
 /**
  * Calculate scrypt parameters from maxtime, maxmem, maxmemfrac values.

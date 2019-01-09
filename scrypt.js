@@ -112,7 +112,7 @@ class Scrypt {
     /**
      * Check whether key was generated from passphrase.
      *
-     * @param {Buffer} key - Derived key obtained from Scrypt.kdf().
+     * @param {Uint8Array|Buffer} key - Derived key obtained from Scrypt.kdf().
      * @param {string|TypedArray|Buffer} passphrase - Passphrase originally used to generate key.
      * @returns {Promise<boolean>} True if key was generated from passphrase.
      *
@@ -121,7 +121,7 @@ class Scrypt {
      *   const ok = await Scrypt.verify(Buffer.from(key, 'base64'), 'my secret password');
      */
     static async verify(key, passphrase) {
-        if (!(key instanceof Buffer)) throw new TypeError('Key must be a Buffer');
+        if (!(key instanceof Uint8Array)) throw new TypeError('Key must be a Buffer');
         if (key.length != 96) throw new RangeError('Invalid key');
         if (typeof passphrase!='string' && !ArrayBuffer.isView(passphrase)) throw new TypeError('Passphrase must be a string, TypedArray, or Buffer');
 
@@ -176,7 +176,7 @@ class Scrypt {
     /**
      * View scrypt parameters which were used to derive key.
      *
-     * @param {string} key - Derived base64 key obtained from Scrypt.kdf().
+     * @param {Uint8Array|Buffer} key - Derived base64 key obtained from Scrypt.kdf().
      * @returns {Object} Scrypt parameters logN, r, p.
      *
      * @example
@@ -184,7 +184,7 @@ class Scrypt {
      *   const params = Scrypt.viewParams(key); // => { logN: 15, r: 8, p: 1 }
      */
     static viewParams(key) {
-        if (!(key instanceof Buffer)) throw new TypeError('Key must be a Buffer');
+        if (!(key instanceof Uint8Array)) throw new TypeError('Key must be a Buffer');
         if (key.length != 96) throw new RangeError('Invalid key');
 
         // use the underlying ArrayBuffer to view key in structured format
