@@ -109,7 +109,7 @@ class Scrypt {
 
             return base64;
         } catch (e) {
-            throw new Error(e); // e.g. memory limit exceeded; localise error to this function
+            throw new Error(e.message); // e.g. memory limit exceeded; localise error to this function
         }
     }
 
@@ -176,7 +176,7 @@ class Scrypt {
             // verify hash
             return crypto.timingSafeEqual(hmacHash, struct.hmachash);
         } catch (e) {
-            throw new Error(e); // localise error to this function [can't happen?]
+            throw new Error(e.message); // localise error to this function [can't happen?]
         }
     }
 
