@@ -29,15 +29,15 @@ Example usage
 
     const Scrypt = require('scrypt-kdf');
     
-    const key = await Scrypt.kdf('my secret password', { logN: 15 });
-    // key is 128-character string which can be stored in a database
+    const key = (await Scrypt.kdf('my secret password', { logN: 15 })).toString('base64');
+    // key is 128-character string which can be stored in a database for subsequent verification
 
 ### verifying
 
     const Scrypt = require('scrypt-kdf');
     
-    const key = await Scrypt.kdf('my secret password', { logN: 15 });
-    const ok = await Scrypt.verify(key, 'my secret password'); // => true
+    const key = (await Scrypt.kdf('my secret password', { logN: 15 })).toString('base64');
+    const ok = await Scrypt.verify(Buffer.from(key, 'base64'), 'my secret password'); // => true
 
 ### ES modules
 
@@ -56,26 +56,26 @@ API
 
 `Scrypt.kdf(passphrase, params)` – derive key from given passphrase (async).
 
-- `passphrase` is a user-supplied password string to be hashed and stored.
+- `passphrase` is a user-supplied password string/TypedArray/Buffer to be hashed and stored.
 - `params` is an object with properties `logN`, `r`, `p`.
   - `logN` is a CPU/memory cost parameter: an integer *work factor* which determines the cost of the key derivation function, and hence the security of the stored key; for sub-100ms interactive logins, a [value of 15 is recommended](https://blog.filippo.io/the-scrypt-parameters/) for current (2017) hardware (increased from the original 2009 recommendation of 14)
   - `r` (optional) is a block size parameter, an integer conventionally fixed at 8.
   - `p` (optional) is a parallelization parameter, an integer conventionally fixed at 1.
-- returns: (promised) key as a 128-character base-64 encoded string.
+- returns: (promised) key as a Buffer which can be stored in any preferred format.
 
 ### – verify
 
 `Scrypt.verify(key, passphrase)` – confirm key was derived from passphrase (async).
 
-- `key` is a base-64 string obtained from `Scrypt.kdf()`.
-- `passphrase` is the password string used to derive the stored `key`.
+- `key` is a Buffer obtained from `Scrypt.kdf()`.
+- `passphrase` is the password string/TypedArray/Buffer used to derive the stored `key`.
 - returns: (promised) `true` for successful verification, `false` otherwise.
 
 ### – view parameters
 
 `Scrypt.viewParams(key)` – return the `logN`, `r`, `p` parameters used to derive `key`.
 
-- `key` is a base-64 string derived from `Scrypt.kdf()`.
+- `key` is a Buffer derived from `Scrypt.kdf()`.
 - returns `{ logN, r, p }` object.
 
 ### – pick parameters
@@ -112,7 +112,7 @@ Scrypt was introduced into Node.js in [v10.5.0](https://nodejs.org/en/blog/relea
 Key format
 ----------
 
-The key is returned as a 128-character base-64 encoded string, in Colin Percival’s [standard file header format](https://github.com/Tarsnap/scrypt/blob/master/FORMAT):
+The key is returned as a 96-byte Buffer/Uint8Array for maximum flexibility, in Colin Percival’s [standard file header format](https://github.com/Tarsnap/scrypt/blob/master/FORMAT):
 
 | offset | length | value
 | -----: | -----: | :----
@@ -125,4 +125,4 @@ The key is returned as a 128-character base-64 encoded string, in Colin Percival
 |     48 |     16 | checksum: first 16 bytes of SHA256(bytes 0–47)
 |     64 |     32 | HMAC-SHA256(bytes 0–63), with scrypt(password, salt, 64, { N, r, p }) as key
 
-The key will always begin with *c2NyeXB0*, as this is ‘scrypt’ encoded as base-64.
+If converted to base-64 (for trouble-free storage or transmission), the key will be a 128-character string, which will always begin with *c2NyeXB0*, as this is ‘scrypt’ encoded as base-64.

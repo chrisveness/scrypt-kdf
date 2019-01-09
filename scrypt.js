@@ -1,5 +1,5 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-/* Scrypt password-based key derivation function.                              (c) C.Veness 2018  */
+/* Scrypt password-based key derivation function.                         (c) C.Veness 2018-2019  */
 /*                                                                                   MIT Licence  */
 /*                                                                                                */
 /* The function derives one or more secret keys from a secret string. It is based on memory-hard  */
@@ -34,10 +34,10 @@ class Scrypt {
      * @param   {number}   params.logN - CPU/memory cost parameter.
      * @param   {number=8} params.r - Block size parameter.
      * @param   {number=1} params.p - Parallelization parameter.
-     * @returns {Promise<string>} Derived key (base-64 encoded).
+     * @returns {Promise<Buffer>} Derived key.
      *
      * @example
-     *   const key = await Scrypt.kdf('my secret password', { logN: 15 });
+     *   const key = (await Scrypt.kdf('my secret password', { logN: 15 })).toString('base64');
      */
     static async kdf(passphrase, params) {
         if (typeof passphrase!='string' && !ArrayBuffer.isView(passphrase)) throw new TypeError('Passphrase must be a string, TypedArray, or Buffer');
@@ -102,11 +102,7 @@ class Scrypt {
             const hmacHash = crypto.createHmac('sha256', hmacKey.slice(32)).update(prefix64).digest();
             struct.hmachash.set(hmacHash);
 
-            // convert key to base-64 string
-            const linear = new Uint8Array(buffer, 0, 96);
-            const base64 = Buffer.from(linear).toString('base64');
-
-            return base64;
+            return Buffer.from(buffer); // return ArrayBuffer as Buffer/Uint8Array
         } catch (e) {
             throw new Error(e.message); // e.g. memory limit exceeded; localise error to this function
         }
@@ -116,24 +112,21 @@ class Scrypt {
     /**
      * Check whether key was generated from passphrase.
      *
-     * @param {string} key - Derived base64 key obtained from Scrypt.kdf().
+     * @param {Buffer} key - Derived key obtained from Scrypt.kdf().
      * @param {string|TypedArray|Buffer} passphrase - Passphrase originally used to generate key.
      * @returns {Promise<boolean>} True if key was generated from passphrase.
      *
      * @example
-     *   const ok = await Scrypt.verify(key, 'my secret password');
+     *   const key = (await Scrypt.kdf('my secret password', { logN: 15 })).toString('base64');
+     *   const ok = await Scrypt.verify(Buffer.from(key, 'base64'), 'my secret password');
      */
     static async verify(key, passphrase) {
-        if (typeof key != 'string') throw new TypeError('Key must be a string');
-        if (key.length != 128) throw new RangeError('Invalid key');
+        if (!(key instanceof Buffer)) throw new TypeError('Key must be a Buffer');
+        if (key.length != 96) throw new RangeError('Invalid key');
         if (typeof passphrase!='string' && !ArrayBuffer.isView(passphrase)) throw new TypeError('Passphrase must be a string, TypedArray, or Buffer');
 
-        // the derived key is 96 bytes: use an ArrayBuffer to view it in different formats
-        const buffer = new ArrayBuffer(96);
-
-        // a linear byte-stream view of the derived key
-        const linear = new Uint8Array(buffer, 0, 96);
-        linear.set(Buffer.from(key, 'base64'));
+        // use the underlying ArrayBuffer to view key in different formats
+        const buffer = key.buffer.slice(key.byteOffset, key.byteOffset + key.byteLength);
 
         // a structured view of the derived key
         const struct = {
@@ -191,15 +184,11 @@ class Scrypt {
      *   const params = Scrypt.viewParams(key); // => { logN: 15, r: 8, p: 1 }
      */
     static viewParams(key) {
-        if (typeof key != 'string') throw new TypeError('Key must be a string');
-        if (key.length != 128) throw new RangeError('Invalid key');
+        if (!(key instanceof Buffer)) throw new TypeError('Key must be a Buffer');
+        if (key.length != 96) throw new RangeError('Invalid key');
 
-        // the derived key is 96 bytes: use an ArrayBuffer to view it in different formats
-        const buffer = new ArrayBuffer(96);
-
-        // a linear byte-stream view of the derived key
-        const linear = new Uint8Array(buffer, 0, 96);
-        linear.set(Buffer.from(key, 'base64'));
+        // use the underlying ArrayBuffer to view key in structured format
+        const buffer = key.buffer.slice(key.byteOffset, key.byteOffset + key.byteLength);
 
         // a structured view of the derived key
         const struct = {
