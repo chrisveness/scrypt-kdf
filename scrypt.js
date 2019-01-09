@@ -34,7 +34,7 @@ class Scrypt {
      * @param   {number}   params.logN - CPU/memory cost parameter.
      * @param   {number=8} params.r - Block size parameter.
      * @param   {number=1} params.p - Parallelization parameter.
-     * @returns {string} Derived key (base-64 encoded).
+     * @returns {Promise<string>} Derived key (base-64 encoded).
      *
      * @example
      *   const key = await Scrypt.kdf('my secret password', { logN: 15 });
@@ -119,7 +119,7 @@ class Scrypt {
      *
      * @param {string} key - Derived base64 key obtained from Scrypt.kdf().
      * @param {string|TypedArray|Buffer} passphrase - Passphrase originally used to generate key.
-     * @returns {boolean} True if key was generated from passphrase.
+     * @returns {Promise<boolean>} True if key was generated from passphrase.
      *
      * @example
      *   const ok = await Scrypt.verify(key, 'my secret password');

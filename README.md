@@ -54,22 +54,22 @@ API
 
 ### – hash
 
-`Scrypt.kdf(passphrase, params)` – derive key from given passphrase.
+`Scrypt.kdf(passphrase, params)` – derive key from given passphrase (async).
 
 - `passphrase` is a user-supplied password string to be hashed and stored.
 - `params` is an object with properties `logN`, `r`, `p`.
   - `logN` is a CPU/memory cost parameter: an integer *work factor* which determines the cost of the key derivation function, and hence the security of the stored key; for sub-100ms interactive logins, a [value of 15 is recommended](https://blog.filippo.io/the-scrypt-parameters/) for current (2017) hardware (increased from the original 2009 recommendation of 14)
   - `r` (optional) is a block size parameter, an integer conventionally fixed at 8.
   - `p` (optional) is a parallelization parameter, an integer conventionally fixed at 1.
-- returns: key as a 128-character base-64 encoded string.
+- returns: (promised) key as a 128-character base-64 encoded string.
 
 ### – verify
 
-`Scrypt.verify(key, passphrase)` – confirm key was derived from passphrase.
+`Scrypt.verify(key, passphrase)` – confirm key was derived from passphrase (async).
 
 - `key` is a base-64 string obtained from `Scrypt.kdf()`.
 - `passphrase` is the password string used to derive the stored `key`.
-- returns: `true` for successful verification, `false` otherwise.
+- returns: (promised) `true` for successful verification, `false` otherwise.
 
 ### – view parameters
 
