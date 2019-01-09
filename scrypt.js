@@ -43,9 +43,8 @@ class Scrypt {
         if (typeof passphrase!='string' && !ArrayBuffer.isView(passphrase)) throw new TypeError('Passphrase must be a string, TypedArray, or Buffer');
         if (typeof params != 'object' || params == null) throw new TypeError('Params must be an object');
 
-        // defaults for r, p
-        if (params.r == undefined) params.r = 8;
-        if (params.p == undefined) params.p = 1;
+        const paramDefaults = { logN: undefined, r: 8, p: 1 };
+        params = Object.assign({}, paramDefaults, params);
 
         // range-check logN, r, p
         const logN = Math.round(params.logN);
