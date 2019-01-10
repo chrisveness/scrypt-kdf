@@ -51,6 +51,24 @@ describe('Scrypt tests', function() {
         });
     });
 
+    describe('Uint8Array/Buffer key', function() {
+        this.slow(200); // kdf() is intentionally slow
+
+        it('Uint8Array', async function() {
+            const pwBuffer = Buffer.from([ 99, 98, 97, 96, 95, 94, 94, 92, 91 ]);
+            const keyTypedArray = new Uint8Array(await Scrypt.kdf(pwBuffer, { logN: 12 }));
+            expect(Scrypt.viewParams(keyTypedArray)).to.deep.equal({ logN: 12, r: 8, p: 1 });
+            expect(await Scrypt.verify(keyTypedArray, pwBuffer)).to.be.true;
+        });
+
+        it('Buffer', async function() {
+            const pwBuffer = Buffer.from([ 99, 98, 97, 96, 95, 94, 94, 92, 91 ]);
+            const keyBuffer = await Scrypt.kdf(pwBuffer, { logN: 12 });
+            expect(Scrypt.viewParams(keyBuffer)).to.deep.equal({ logN: 12, r: 8, p: 1 });
+            expect(await Scrypt.verify(keyBuffer, pwBuffer)).to.be.true;
+        });
+    });
+
     describe('TypedArray/Buffer passphrase', function() {
         this.slow(200); // kdf() is intentionally slow
 
