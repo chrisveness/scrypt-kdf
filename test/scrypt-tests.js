@@ -14,7 +14,7 @@ const key0salt = 'c2NyeXB0AAwAAAAIAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 describe('Scrypt tests', function() {
     this.slow(20);
 
-    describe('Hash & verify', function() {
+    describe('Hash & verify (base64)', function() {
         this.slow(200); // kdf() is intentionally slow
 
         it('with just logN param', async function() {
@@ -41,7 +41,7 @@ describe('Scrypt tests', function() {
         });
     });
 
-    describe('Verify previous key', function() {
+    describe('Verify previous key (base64)', function() {
         it('verifies null-salt key', async function() {
             expect(await Scrypt.verify(Buffer.from(key0salt, 'base64'), password)).to.be.true;
         });
@@ -55,17 +55,17 @@ describe('Scrypt tests', function() {
         this.slow(200); // kdf() is intentionally slow
 
         it('Uint8Array', async function() {
-            const pwBuffer = Buffer.from([ 99, 98, 97, 96, 95, 94, 94, 92, 91 ]);
-            const keyTypedArray = new Uint8Array(await Scrypt.kdf(pwBuffer, { logN: 12 }));
-            expect(Scrypt.viewParams(keyTypedArray)).to.deep.equal({ logN: 12, r: 8, p: 1 });
-            expect(await Scrypt.verify(keyTypedArray, pwBuffer)).to.be.true;
+            const pwUint8Array = new Uint8Array([ 99, 98, 97, 96, 95, 94, 94, 92, 91 ]);
+            const key = await Scrypt.kdf(pwUint8Array, { logN: 12 });
+            expect(Scrypt.viewParams(new Uint8Array(key))).to.deep.equal({ logN: 12, r: 8, p: 1 });
+            expect(await Scrypt.verify(new Uint8Array(key), pwUint8Array)).to.be.true;
         });
 
         it('Buffer', async function() {
             const pwBuffer = Buffer.from([ 99, 98, 97, 96, 95, 94, 94, 92, 91 ]);
-            const keyBuffer = await Scrypt.kdf(pwBuffer, { logN: 12 });
-            expect(Scrypt.viewParams(keyBuffer)).to.deep.equal({ logN: 12, r: 8, p: 1 });
-            expect(await Scrypt.verify(keyBuffer, pwBuffer)).to.be.true;
+            const key = await Scrypt.kdf(pwBuffer, { logN: 12 });
+            expect(Scrypt.viewParams(key)).to.deep.equal({ logN: 12, r: 8, p: 1 });
+            expect(await Scrypt.verify(key, pwBuffer)).to.be.true;
         });
     });
 
@@ -74,6 +74,13 @@ describe('Scrypt tests', function() {
 
         it('Uint8Array', async function() {
             const pwTypedArray = new Uint8Array([ 99, 98, 97, 96, 95, 94, 94, 92, 91 ]);
+            const key = await Scrypt.kdf(pwTypedArray, { logN: 12 });
+            expect(Scrypt.viewParams(key)).to.deep.equal({ logN: 12, r: 8, p: 1 });
+            expect(await Scrypt.verify(key, pwTypedArray)).to.be.true;
+        });
+
+        it('Float64Array', async function() {
+            const pwTypedArray = new Float64Array([ 99.8, 98.7, 97.6, 96.5 ]);
             const key = await Scrypt.kdf(pwTypedArray, { logN: 12 });
             expect(Scrypt.viewParams(key)).to.deep.equal({ logN: 12, r: 8, p: 1 });
             expect(await Scrypt.verify(key, pwTypedArray)).to.be.true;
