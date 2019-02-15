@@ -112,7 +112,7 @@ class Scrypt {
     /**
      * Check whether key was generated from passphrase.
      *
-     * @param {Uint8Array|Buffer} key - Derived key obtained from Scrypt.kdf().
+     * @param {Buffer|Uint8Array} key - Derived key obtained from Scrypt.kdf().
      * @param {string|TypedArray|Buffer} passphrase - Passphrase originally used to generate key.
      * @returns {Promise<boolean>} True if key was generated from passphrase.
      *
@@ -176,7 +176,7 @@ class Scrypt {
     /**
      * View scrypt parameters which were used to derive key.
      *
-     * @param {Uint8Array|Buffer} key - Derived base64 key obtained from Scrypt.kdf().
+     * @param {Buffer|Uint8Array} key - Derived base64 key obtained from Scrypt.kdf().
      * @returns {Object} Scrypt parameters logN, r, p.
      *
      * @example

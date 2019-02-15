@@ -99,10 +99,10 @@ Scrypt was introduced into Node.js in [v10.5.0](https://nodejs.org/en/blog/relea
 
     const crypto = require('crypto');
     if (!crypto.scrypt) {
-        const scrypt = require('scrypt-async');
+        const scryptAsync = require('scrypt-async');
         crypto.scrypt = function(password, salt, keylen, options, callback) {
             const opt = Object.assign({}, options, { dkLen: keylen });
-            scrypt(password, salt, opt, (derivedKey) => callback(null, Buffer.from(derivedKey))); 
+            scryptAsync(password, salt, opt, (derivedKey) => callback(null, Buffer.from(derivedKey))); 
         };
     }
 
