@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2.0.0] - 2019-02-15
 
 ### Changed
 - [BREAKING] Return & accept key as Buffer rather than as base-64 string
