@@ -23,21 +23,23 @@ Example usage
  
 `scrypt-kdf` is available from [npm](https://www.npmjs.com/package/scrypt-kdf):
  
-    npm install scrypt-kdf
+    $ npm install scrypt-kdf
 
 ### hashing
 
     const Scrypt = require('scrypt-kdf');
     
-    const key = (await Scrypt.kdf('my secret password', { logN: 15 })).toString('base64');
-    // key is 128-character string which can be stored in a database for subsequent verification
+    const keyBuf = await Scrypt.kdf('my secret pw', { logN: 15 });
+    const keyStr = keyBuf.toString('base64');
+    // keyStr is 128-char string which can be stored for subsequent verification
 
 ### verifying
 
     const Scrypt = require('scrypt-kdf');
-    
-    const key = (await Scrypt.kdf('my secret password', { logN: 15 })).toString('base64');
-    const ok = await Scrypt.verify(Buffer.from(key, 'base64'), 'my secret password'); // => true
+
+    const user = await users.findOne({ email: req.body.email }); // for example
+    const keyBuf = Buffer.from(user.password, 'base64');
+    const ok = await Scrypt.verify(keyBuf, req.body.password);
 
 ### ES modules
 
