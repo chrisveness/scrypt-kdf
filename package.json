@@ -21,7 +21,7 @@
   "main": "scrypt.js",
   "types": "scrypt.d.ts",
   "engines": {
-    "node": ">=10.5.0"
+    "node": ">=8.5.0"
   },
   "scripts": {
     "test": "mocha --exit test/scrypt-tests.js",
