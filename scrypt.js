@@ -9,9 +9,10 @@
 /*                                                                                                */
 /* This implementation is a zero-dependency wrapper providing access to the OpenSSL scrypt        */
 /* function, returning a derived key with scrypt parameters and salt in Colin Percival's standard */
-/* file header format.                                                                            */
+/* file header format, and a function for verifying that key against the original password.       */
 /*                                                                                                */
-/* Requires NodeJS 10.5.0 or above.                                                               */
+/* Requires Node.js 10.5.0 or above: see github.com/chrisveness/scrypt-kdf#openssl-implementation */
+/* (unless crypto.scrypt is polyfilled with scrypt-async - in which case v8.5.0+).                */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
 const crypto      = require('crypto');                 // nodejs.org/api/crypto.html
@@ -20,7 +21,8 @@ const os          = require('os');                     // nodejs.org/api/os.html
 const TextEncoder = require('util').TextEncoder;       // nodejs.org/api/util.html
 const promisify   = require('util').promisify;         // nodejs.org/api/util.html
 
-if (crypto.scrypt == undefined) throw new Error('crypto.scrypt not found: Node.js v10.5.0+ required');
+const versionMsg = 'crypto.scrypt not found: Node.js v10.5.0+ required; see github.com/chrisveness/scrypt-kdf#openssl-implementation';
+if (crypto.scrypt == undefined) throw new Error(versionMsg);
 const cryptoScrypt = promisify(crypto.scrypt);
 
 

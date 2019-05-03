@@ -97,7 +97,7 @@ OpenSSL implementation
 
 `scrypt-kdf` is a wrapper around the [OpenSSL](https://www.openssl.org/docs/manmaster/man7/scrypt.html) implementation of scrypt made available through the Node.js [crypto module](https://nodejs.org/api/crypto.html#crypto_crypto_scrypt_password_salt_keylen_options_callback).
 
-Scrypt was introduced into Node.js in [v10.5.0](https://nodejs.org/en/blog/release/v10.5.0/), so `scrypt-kdf` requires Node.js v10.5.0 or above; if you want to use it with Node.js < 10.5.0, you can polyfill the OpenSSL scrypt with [scrypt-async](https://www.npmjs.com/package/scrypt-async) using the following:
+Scrypt was introduced into Node.js in [v10.5.0](https://nodejs.org/en/blog/release/v10.5.0/), so `scrypt-kdf` requires Node.js v10.5.0 or above; it can also be used with Node.js v8.5.0...v10.4.1 using the [scrypt-async](https://www.npmjs.com/package/scrypt-async) OpenSSL polyfill with the following code fragment:
 
     const crypto = require('crypto');
     if (!crypto.scrypt) {
