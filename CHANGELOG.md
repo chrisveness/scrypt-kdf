@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.1] - 2019-05-03
+
+### Changed
+
+- Node.js 'engines' changed to >=8.5.0 to facilitate polyfill usage in yarn
+
 ## [2.0.0] - 2019-02-15
 
 ### Changed

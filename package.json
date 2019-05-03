@@ -16,7 +16,7 @@
     "type": "git",
     "url": "https://github.com/chrisveness/scrypt-kdf"
   },
-  "version": "2.0.0",
+  "version": "2.0.1",
   "license": "MIT",
   "main": "scrypt.js",
   "types": "scrypt.d.ts",
@@ -31,10 +31,10 @@
   "dependencies": {},
   "devDependencies": {
     "chai": "^4.2.0",
-    "coveralls": "3.0.2",
-    "eslint": "^5.13.0",
-    "mocha": "^5.2.0",
-    "nyc": "^13.3.0"
+    "coveralls": "^3.0.3",
+    "eslint": "^5.16.0",
+    "mocha": "^6.1.4",
+    "nyc": "^14.1.0"
   },
   "eslintConfig": {
     "env": {
