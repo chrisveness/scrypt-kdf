@@ -1,7 +1,7 @@
 /**
  * scrypt parameters
  */
-export interface ScryptParams {
+interface ScryptParamsKdf {
   /**
    * CPU/memory cost parameter.
    */
@@ -10,13 +10,18 @@ export interface ScryptParams {
   /**
    * Block size parameter.
    */
-  r: number;
+  r?: number;
 
   /**
    * Parallelization parameter.
    */
-  p: number;
+  p?: number;
 }
+
+/**
+ * scrypt parameters
+ */
+export type ScryptParams = Required<ScryptParamsKdf>;
 
 /**
  * Produce derived key using scrypt as a key derivation function.
@@ -28,7 +33,7 @@ export interface ScryptParams {
  * @example
  *   const key = await Scrypt.kdf('my secret password', { logN: 15 });
  */
-export declare function kdf(passphrase: string|ArrayBufferView, params: Readonly<ScryptParams>): Promise<Buffer>;
+export declare function kdf(passphrase: string|ArrayBufferView, params: Readonly<ScryptParamsKdf>): Promise<Buffer>;
 
 /**
  * Check whether key was generated from passphrase.
