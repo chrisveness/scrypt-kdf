@@ -42,8 +42,8 @@ class Scrypt {
      *   const key = (await Scrypt.kdf('my secret password', { logN: 15 })).toString('base64');
      */
     static async kdf(passphrase, params) {
-        if (typeof passphrase!='string' && !ArrayBuffer.isView(passphrase)) throw new TypeError('Passphrase must be a string, TypedArray, or Buffer');
-        if (typeof params != 'object' || params == null) throw new TypeError('Params must be an object');
+        if (typeof passphrase!='string' && !ArrayBuffer.isView(passphrase)) throw new TypeError(`Passphrase must be a string, TypedArray, or Buffer (received ${typeOf(passphrase)})`);
+        if (typeof params != 'object' || params == null) throw new TypeError(`Params must be an object (received ${typeOf(params)})`);
 
         const paramDefaults = { logN: undefined, r: 8, p: 1 };
         params = Object.assign({}, paramDefaults, params);
@@ -123,9 +123,9 @@ class Scrypt {
      *   const ok = await Scrypt.verify(Buffer.from(key, 'base64'), 'my secret password');
      */
     static async verify(key, passphrase) {
-        if (!(key instanceof Uint8Array)) throw new TypeError('Key must be a Buffer');
+        if (!(key instanceof Uint8Array)) throw new TypeError(`Key must be a Buffer (received ${typeOf(key)})`);
         if (key.length != 96) throw new RangeError('Invalid key');
-        if (typeof passphrase!='string' && !ArrayBuffer.isView(passphrase)) throw new TypeError('Passphrase must be a string, TypedArray, or Buffer');
+        if (typeof passphrase!='string' && !ArrayBuffer.isView(passphrase)) throw new TypeError(`Passphrase must be a string, TypedArray, or Buffer (received ${typeOf(passphrase)})`);
 
         // use the underlying ArrayBuffer to view key in different formats
         const buffer = key.buffer.slice(key.byteOffset, key.byteOffset + key.byteLength);
@@ -186,7 +186,7 @@ class Scrypt {
      *   const params = Scrypt.viewParams(key); // => { logN: 15, r: 8, p: 1 }
      */
     static viewParams(key) {
-        if (!(key instanceof Uint8Array)) throw new TypeError('Key must be a Buffer');
+        if (!(key instanceof Uint8Array)) throw new TypeError(`Key must be a Buffer (received ${typeOf(key)})`);
         if (key.length != 96) throw new RangeError('Invalid key');
 
         // use the underlying ArrayBuffer to view key in structured format
@@ -281,6 +281,13 @@ class Scrypt {
         return { logN, r, p };
     }
 
+}
+
+/**
+ * Return more useful type description than 'typeof': javascriptweblog.wordpress.com/2011/08/08/
+ */
+function typeOf(obj) {
+    return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */

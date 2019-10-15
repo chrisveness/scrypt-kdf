@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Indicate received type when parameter type checks fail
+
 ## [2.0.1] - 2019-05-03
 
 ### Changed

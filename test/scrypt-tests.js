@@ -133,22 +133,22 @@ describe('Scrypt tests', function() {
         describe('kdf errors', function() {
             it('throws on numeric passphrase', () => Scrypt.kdf(99)
                 .then(() => { throw new Error('Test should fail'); })
-                .catch(error => expect(error.message).to.equal('Passphrase must be a string, TypedArray, or Buffer')));
+                .catch(error => expect(error.message).to.equal('Passphrase must be a string, TypedArray, or Buffer (received number)')));
             it('throws on no params', () => Scrypt.kdf(password)
                 .then(() => { throw new Error('Test should fail'); })
-                .catch(error => expect(error.message).to.equal('Params must be an object')));
+                .catch(error => expect(error.message).to.equal('Params must be an object (received undefined)')));
             it('throws on bad params', () => Scrypt.kdf(password, null)
                 .then(() => { throw new Error('Test should fail'); })
-                .catch(error => expect(error.message).to.equal('Params must be an object')));
+                .catch(error => expect(error.message).to.equal('Params must be an object (received null)')));
             it('throws on bad params', () => Scrypt.kdf(password, false)
                 .then(() => { throw new Error('Test should fail'); })
-                .catch(error => expect(error.message).to.equal('Params must be an object')));
+                .catch(error => expect(error.message).to.equal('Params must be an object (received boolean)')));
             it('throws on bad params', () => Scrypt.kdf(password, 99)
                 .then(() => { throw new Error('Test should fail'); })
-                .catch(error => expect(error.message).to.equal('Params must be an object')));
+                .catch(error => expect(error.message).to.equal('Params must be an object (received number)')));
             it('throws on bad params', () => Scrypt.kdf(password, 'bad params')
                 .then(() => { throw new Error('Test should fail'); })
-                .catch(error => expect(error.message).to.equal('Params must be an object')));
+                .catch(error => expect(error.message).to.equal('Params must be an object (received string)')));
             it('throws on bad logN', () => Scrypt.kdf(password, { logN: 'bad' })
                 .then(() => { throw new Error('Test should fail'); })
                 .catch(error => expect(error.message).to.equal('Parameter logN must be an integer; received bad')));
@@ -184,10 +184,10 @@ describe('Scrypt tests', function() {
         describe('verify errors', function() {
             it('throws on bad passphrase type', async () => Scrypt.verify(await Scrypt.kdf(password, { logN: 12 }), null)
                 .then(() => { throw new Error('Test should fail'); })
-                .catch(error => expect(error.message).to.equal('Passphrase must be a string, TypedArray, or Buffer')));
+                .catch(error => expect(error.message).to.equal('Passphrase must be a string, TypedArray, or Buffer (received null)')));
             it('throws on bad key type', () => Scrypt.verify(null, 'passwd')
                 .then(() => { throw new Error('Test should fail'); })
-                .catch(error => expect(error.message).to.equal('Key must be a Buffer')));
+                .catch(error => expect(error.message).to.equal('Key must be a Buffer (received null)')));
             it('throws on bad key', () => Scrypt.verify(Buffer.from('key', 'base64'), 'passwd')
                 .then(() => { throw new Error('Test should fail'); })
                 .catch(error => expect(error.message).to.equal('Invalid key')));
