@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/chrisveness/scrypt-kdf"
   },
-  "version": "2.0.1",
+  "version": "3.0.0",
   "license": "MIT",
   "main": "scrypt.js",
   "type": "module",
