@@ -1,16 +1,7 @@
 {
   "name": "scrypt-kdf",
   "description": "Scrypt Key Derivation Function",
-  "keywords": [
-    "crypto",
-    "scrypt",
-    "kdf",
-    "password",
-    "hash",
-    "login",
-    "authenticate",
-    "verify"
-  ],
+  "keywords": [ "crypto", "scrypt", "kdf", "password", "hash", "login", "authenticate", "verify" ],
   "author": "Chris Veness",
   "repository": {
     "type": "git",
@@ -19,28 +10,24 @@
   "version": "2.0.1",
   "license": "MIT",
   "main": "scrypt.js",
+  "type": "module",
   "types": "scrypt.d.ts",
   "engines": {
-    "node": ">=8.5.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
-    "test": "mocha --exit test/scrypt-tests.js",
-    "lint": "eslint scrypt.js test/scrypt-tests.js",
-    "cover": "c8 -r html npm test"
+    "test": "npm run test-node && npm run test-deno",
+    "test-node": "node --test test/tests-node.js",
+    "test-deno": "deno test -NES test/tests-deno.js",
+    "lint": "eslint scrypt.js test/tests-*.js",
+    "cover": "c8 npm test"
   },
   "devDependencies": {
-    "c8": "^7.0.0",
-    "chai": "^4.0.0",
-    "coveralls": "^3.0.0",
-    "eslint": "^7.0.0",
-    "mocha": "^7.0.0"
-  },
-  "eslintConfig": {
-    "env": {
-      "es2017": true,
-      "mocha": true,
-      "node": true
-    },
-    "extends": "eslint:recommended"
+    "@babel/eslint-parser": "^7",
+    "@babel/plugin-syntax-import-attributes": "^7",
+    "@eslint/js": "^9",
+    "@types/node": "^22",
+    "c8": "^10",
+    "globals": "^15"
   }
 }

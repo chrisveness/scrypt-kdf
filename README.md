@@ -1,8 +1,7 @@
 Scrypt Key Derivation Function
 ==============================
 
-[![Build Status](https://travis-ci.org/chrisveness/scrypt-kdf.svg?branch=master)](https://travis-ci.org/chrisveness/scrypt-kdf)
-[![Coverage Status](https://coveralls.io/repos/github/chrisveness/scrypt-kdf/badge.svg?branch=master)](https://coveralls.io/github/chrisveness/scrypt-kdf?branch=master)
+![Node.js CI](https://github.com/chrisveness/scrypt-kdf/actions/workflows/node.js.yml/badge.svg)
 
 Scrypt is a *password-based [key derivation function](https://en.wikipedia.org/wiki/Key_derivation_function)*, useful for storing password hashes for verifying interactive logins.
 
@@ -20,36 +19,30 @@ It was originally developed by Colin Percival as part of the [Tarsnap](http://ww
 
 Example usage
 -------------
- 
+
 `scrypt-kdf` is available from [npm](https://www.npmjs.com/package/scrypt-kdf):
- 
+
     $ npm install scrypt-kdf
 
 ### hashing
 
-    const Scrypt = require('scrypt-kdf');
-    
+    import Scrypt from 'scrypt-kdf');
+
     const keyBuf = await Scrypt.kdf('my secret pw', { logN: 15 });
     const keyStr = keyBuf.toString('base64');
     // keyStr is 128-char string which can be stored for subsequent verification
 
 ### verifying
 
-    const Scrypt = require('scrypt-kdf');
+    import Scrypt from 'scrypt-kdf');
 
     const user = await users.findOne({ email: req.body.email }); // for example
     const keyBuf = Buffer.from(user.password, 'base64');
     const ok = await Scrypt.verify(keyBuf, req.body.password);
 
-### ES modules
+### in Deno:
 
-If using ES modules (for instance with the [esm](https://www.npmjs.com/package/esm) package), use
-
-    import Scrypt from 'scrypt-kdf';
-
-in place of
-
-    const Scrypt = require('scrypt-kdf');
+    import Scrypt from 'npm:scrypt-kdf@^3';
 
 API
 ---
@@ -95,20 +88,7 @@ Note that results are dependent on the computer the calculation is run on; calcu
 OpenSSL implementation
 ----------------------
 
-`scrypt-kdf` is a wrapper around the [OpenSSL](https://www.openssl.org/docs/manmaster/man7/scrypt.html) implementation of scrypt made available through the Node.js [crypto module](https://nodejs.org/api/crypto.html#crypto_crypto_scrypt_password_salt_keylen_options_callback).
-
-Scrypt was introduced into Node.js in [v10.5.0](https://nodejs.org/en/blog/release/v10.5.0/), so `scrypt-kdf` requires Node.js v10.5.0 or above; it can also be used with Node.js v8.5.0...v10.4.1 using the [scrypt-async](https://www.npmjs.com/package/scrypt-async) OpenSSL polyfill with the following code fragment:
-
-    const crypto = require('crypto');
-    if (!crypto.scrypt) {
-        const scryptAsync = require('scrypt-async');
-        crypto.scrypt = function(password, salt, keylen, options, callback) {
-            const opt = Object.assign({}, options, { dkLen: keylen });
-            scryptAsync(password, salt, opt, (derivedKey) => callback(null, Buffer.from(derivedKey))); 
-        };
-    }
-
-`Scrypt.pickParams()` will not be available with this polyfill.
+`scrypt-kdf` is a wrapper around the [OpenSSL](https://www.openssl.org/1.1.1/man7/scrypt.html) implementation of scrypt made available through the Node.js [crypto module](https://nodejs.org/api/crypto.html#crypto_crypto_scrypt_password_salt_keylen_options_callback).
 
 
 Key format

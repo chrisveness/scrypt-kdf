@@ -33,7 +33,7 @@ export type ScryptParams = Required<ScryptParamsKdf>;
  * @example
  *   const key = await Scrypt.kdf('my secret password', { logN: 15 });
  */
-export declare function kdf(passphrase: string|ArrayBufferView, params: Readonly<ScryptParamsKdf>): Promise<Buffer>;
+export declare function kdf(passphrase: string|Uint8Array|Buffer, params: Readonly<ScryptParamsKdf>): Promise<Buffer>;
 
 /**
  * Check whether key was generated from passphrase.
@@ -45,7 +45,7 @@ export declare function kdf(passphrase: string|ArrayBufferView, params: Readonly
  * @example
  *   const ok = await Scrypt.verify(key, 'my secret password');
  */
-export declare function verify(key: Uint8Array, passphrase: string|ArrayBufferView): Promise<boolean>;
+export declare function verify(key: string|Uint8Array|Buffer, passphrase: string|Uint8Array|Buffer): Promise<boolean>;
 
 /**
  * View scrypt parameters which were used to derive key.
@@ -57,7 +57,7 @@ export declare function verify(key: Uint8Array, passphrase: string|ArrayBufferVi
  *   const key = await Scrypt.kdf('my secret password', { logN: 15 } );
  *   const params = Scrypt.viewParams(key); // => { logN: 15, r: 8, p: 1 }
  */
-export declare function viewParams(key: Uint8Array): ScryptParams;
+export declare function viewParams(key: string|Uint8Array|Buffer): ScryptParams;
 
 /**
  * Calculate scrypt parameters from maxtime, maxmem, maxmemfrac values.

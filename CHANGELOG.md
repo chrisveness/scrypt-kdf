@@ -4,7 +4,12 @@
 
 ### Changed
 
+- BREAKING: Convert to ESM
+- Run in Node.js & Deno
+- Strings accepted for passphrase & key arguments
+- Use Web Crypto API in place of node:crypto (except OpenSSL scrypt, timingSafeEqual)
 - Indicate received type when parameter type checks fail
+- Use GitHub Actions CI in place of Travis CI
 
 ## [2.0.1] - 2019-05-03
 
