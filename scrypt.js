@@ -29,6 +29,8 @@ class Scrypt {
     /**
      * Produce derived key using scrypt as a key derivation function.
      *
+     * Recommended parameter values (2017) are logN:15, r:8, p:1; words.filippo.io/the-scrypt-parameters.
+     *
      * @param   {string|Uint8Array|Buffer} passphrase - Secret value such as a password from which key is to be derived.
      * @param   {Object}   params - Scrypt parameters.
      * @param   {number}   params.logN - CPU/memory cost parameter.
@@ -225,7 +227,13 @@ class Scrypt {
     /**
      * Calculate scrypt parameters from maxtime, maxmem, maxmemfrac values.
      *
-     * Adapted from Colin Percival's code: see github.com/Tarsnap/scrypt/tree/master/lib.
+     * Adapted from Colin Percival's code: see github.com/Tarsnap/scrypt/tree/master/lib/scryptenc.
+     * Percival recommended an interactive login delay of "up to 100ms".
+     *
+     * NOTE: empirical tests in 2024 suggest this approach underestimates logN by one or two, and
+     *       confirm Filippo Valsorda's recommendation for logN=15; ("the biggest power of two that
+     *       will run in less than 100ms") - timing tests are the most reliable way to validate
+     *       optimal parameters.
      *
      * Returned parameters may vary depending on computer specs & current loading.
      *
@@ -247,12 +255,13 @@ class Scrypt {
 
         // Colin Percival measures how many scrypts can be done in one clock tick using C/POSIX
         // clock_getres() / CLOCKS_PER_SEC (usually just one?); we will use performance.now() to get
-        // a DOMHighResTimeStamp. (Following meltdown/spectre timing attacks Chrome reduced the high
-        // res timestamp resolution to 100µs, so we'll be conservative and do a 1ms run - typically
-        // 1..10 minimal scrypts).
+        // a DOMHighResTimeStamp. (Following meltdown/spectre timing attacks high-res timestamp
+        // resolution has been 'coarsened' to 100µs, so we'll be conservative and do a 100ms run -
+        // typically 100..1000 minimal scrypts, noting greater timing variability in JavaScript than
+        // in C).
         let i = 0;
         const start = performance.now();
-        while (performance.now()-start < 1) {
+        while (performance.now()-start < 100) { // 100ms run
             opensslScryptSync('', '', 64, { N: 128, r: 1, p: 1 });
             i += 512; // we invoked the salsa20/8 core 512 times
         }

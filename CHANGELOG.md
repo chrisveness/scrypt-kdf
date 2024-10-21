@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Increase pickParams() timing loop
+
 ## [3.0.0] - 2024-10-18
 
 ### Changed
