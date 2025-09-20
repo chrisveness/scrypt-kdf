@@ -32,10 +32,10 @@ class Scrypt {
      * Recommended parameter values (2017) are logN:15, r:8, p:1; words.filippo.io/the-scrypt-parameters.
      *
      * @param   {string|Uint8Array|Buffer} passphrase - Secret value such as a password from which key is to be derived.
-     * @param   {Object}   params - Scrypt parameters.
-     * @param   {number}   params.logN - CPU/memory cost parameter.
-     * @param   {number=8} params.r - Block size parameter.
-     * @param   {number=1} params.p - Parallelization parameter.
+     * @param   {object} params - Scrypt parameters.
+     * @param   {number} params.logN - CPU/memory cost parameter.
+     * @param   {number} [params.r=8] - Block size parameter.
+     * @param   {number} [params.p=1] - Parallelization parameter.
      * @returns {Promise<Buffer>} Derived key.
      *
      * @example
@@ -186,7 +186,7 @@ class Scrypt {
      * View scrypt parameters which were used to derive key.
      *
      * @param   {string|Uint8Array|Buffer} key - Derived base64 key obtained from Scrypt.kdf().
-     * @returns {Object} Scrypt parameters logN, r, p.
+     * @returns {object} Scrypt parameters logN, r, p.
      *
      * @example
      *   const key = await Scrypt.kdf('my secret password', { logN: 15 } );
@@ -237,10 +237,10 @@ class Scrypt {
      *
      * Returned parameters may vary depending on computer specs & current loading.
      *
-     * @param   {number}          maxtime - Maximum time in seconds scrypt will spend computing the derived key.
-     * @param   {number=availMem} maxmem - Maximum bytes of RAM used when computing the derived encryption key.
-     * @param   {number=0.5}      maxmemfrac - Fraction of the available RAM used when computing the derived key.
-     * @returns {Object} Scrypt parameters logN, r, p.
+     * @param   {number} maxtime - Maximum time in seconds scrypt will spend computing the derived key.
+     * @param   {number} [maxmem=availMem] - Maximum bytes of RAM used when computing the derived encryption key.
+     * @param   {number} [maxmemfrac=0.5] - Fraction of the available RAM used when computing the derived key.
+     * @returns {object} Scrypt parameters logN, r, p.
      *
      * @example
      *   const params = Scrypt.pickParams(0.1); // => e.g. { logN: 15, r: 8, p: 1 }
