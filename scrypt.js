@@ -1,5 +1,5 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-/* Scrypt password-based key derivation function.    © 2018-2024 Chris Veness / Movable Type Ltd  */
+/* Scrypt password-based key derivation function.    © 2018-2025 Chris Veness / Movable Type Ltd  */
 /*                                                                                   MIT Licence  */
 /*                                                                                                */
 /* The function derives one or more secret keys from a secret string. It is based on memory-hard  */
@@ -11,16 +11,14 @@
 /* function, returning a derived key with scrypt parameters and salt in Colin Percival's standard */
 /* file header format, and a function for verifying that key against the original password.       */
 /*                                                                                                */
-/* Runs on Node.js v18.0.0+ or Deno v2.0.1+.                                                     */
+/* Runs on Node.js v19.0.0+ or Deno v2.5.0+.                                                      */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-import nodeCrypto      from 'node:crypto'; // for OpenSSL scrypt, timingSafeEqual
-import { Buffer }      from 'node:buffer'; // key is returned as Buffer (for better or for worse)
-import os              from 'node:os';     // for total amoung to system memory
-import { TextEncoder } from 'node:util';   // TextEncoder should be a global in Node.js, but it's not
-import { promisify }   from 'node:util';
+import nodeCrypto from 'node:crypto'; // for OpenSSL scrypt, timingSafeEqual (not avail on crypto global)
+import os         from 'node:os';
+import util       from 'node:util';
 
-const opensslScrypt = promisify(nodeCrypto.scrypt); // OpenSSL scrypt; docs.openssl.org/1.1.1/man7/scrypt/
+const opensslScrypt = util.promisify(nodeCrypto.scrypt); // OpenSSL scrypt; docs.openssl.org/master/man7/EVP_KDF-SCRYPT
 const opensslScryptSync = nodeCrypto.scryptSync;
 
 
@@ -31,18 +29,18 @@ class Scrypt {
      *
      * Recommended parameter values (2017) are logN:15, r:8, p:1; words.filippo.io/the-scrypt-parameters.
      *
-     * @param   {string|Uint8Array|Buffer} passphrase - Secret value such as a password from which key is to be derived.
+     * @param   {string|Uint8Array} passphrase - Secret value such as a password from which key is to be derived.
      * @param   {object} params - Scrypt parameters.
      * @param   {number} params.logN - CPU/memory cost parameter.
      * @param   {number} [params.r=8] - Block size parameter.
      * @param   {number} [params.p=1] - Parallelization parameter.
-     * @returns {Promise<Buffer>} Derived key.
+     * @returns {Promise<Uint8Array>} Derived key.
      *
      * @example
-     *   const key = (await Scrypt.kdf('my secret password', { logN: 15 })).toString('base64');
+     *   const key = (await Scrypt.kdf('my secret password', { logN: 15 })).toBase64());
      */
     static async kdf(passphrase, params) {
-        if (typeof passphrase!='string' && !ArrayBuffer.isView(passphrase)) throw new TypeError(`passphrase must be a string, TypedArray, or Buffer (received ${typeOf(passphrase)})`);
+        if (typeof passphrase!='string' && !ArrayBuffer.isView(passphrase)) throw new TypeError(`passphrase must be a string or TypedArray (received ${typeOf(passphrase)})`);
         if (params === undefined) throw new TypeError('params must be supplied');
         if (typeof params != 'object' || params == null) throw new TypeError(`params must be an object (received ${typeOf(params)})`);
 
@@ -87,50 +85,49 @@ class Scrypt {
 
         // set checksum of params & salt
         const prefix48 = new Uint8Array(keyBuff,  0, 48); // view onto struct.scrypt, struct.params, struct.salt
-        const prefix48hash = await crypto.subtle.digest('SHA-256', prefix48); // digest() returns ArrayBuffer...
-        struct.checksum.set(new Uint8Array(prefix48hash.slice(0, 16))); // note TypedArray.set() requires TypedArray arg, not ArrayBuffer
+        const prefix48hash = await crypto.subtle.digest('SHA-256', prefix48); // digest() returns ArrayBuffer, 32 bytes
+        const checksum = prefix48hash.slice(0, 16);                           // 1st 16 bytes of SHA256(bytes 0–47)
+        struct.checksum.set(new Uint8Array(checksum));
 
         // set HMAC hash from scrypt-derived key
-        try {
-            params = {
-                N:      2**logN,
-                r:      r,
-                p:      p,
-                maxmem: 2**31-1, // 2GB is maximum maxmem allowed
-            };
-            // apply scrypt kdf to salt to derive hmac key
-            const hmacKey = await opensslScrypt(passphrase, struct.salt, 64, params);
 
-            // get hmachash of params, salt, & checksum, using 1st 32 bytes of scrypt hash as key
-            const prefix64 = new Uint8Array(keyBuff, 0, 64);
-            const algorithm = { name: 'HMAC', hash: 'SHA-256' };
-            const cryptoKey = await crypto.subtle.importKey('raw', hmacKey.slice(32), algorithm, false, [ 'sign' ]);
-            const hmacHash = await crypto.subtle.sign(algorithm.name, cryptoKey, prefix64); // sign() returns ArrayBuffer...
-            struct.hmachash.set(new Uint8Array(hmacHash)); // note TypedArray.set() requires TypedArray arg, not ArrayBuffer
+        // apply scrypt kdf to salt to derive hmac key (note opensslScrypt takes string, Buffer, TypedArray, etc)
+        params = {
+            N:      2**logN,
+            r:      r,
+            p:      p,
+            maxmem: 2**31-1, // 2GB is maximum maxmem allowed
+        };
+        const hmacKey = await opensslScrypt(passphrase, struct.salt, 64, params);
 
-            return Buffer.from(keyBuff); // return ArrayBuffer as Buffer/Uint8Array
-        } catch (e) {
-            throw new Error(e.message); // e.g. memory limit exceeded; localise error to this function
-        }
+        // get hmachash of params, salt, & checksum, using 1st 32 bytes of scrypt hash as key
+        const prefix64 = new Uint8Array(keyBuff, 0, 64);
+        const algorithm = { name: 'HMAC', hash: 'SHA-256' };
+        const cryptoKey = await crypto.subtle.importKey('raw', hmacKey.slice(32), algorithm, false, [ 'sign' ]);
+        const hmacHash = await crypto.subtle.sign(algorithm.name, cryptoKey, prefix64); // sign() returns ArrayBuffer...
+        struct.hmachash.set(new Uint8Array(hmacHash)); // note TypedArray.set() requires TypedArray arg, not ArrayBuffer
+
+        return new Uint8Array(keyBuff);
     }
 
 
     /**
      * Check whether key was generated from passphrase.
      *
-     * @param   {string|Uint8Array|Buffer} key - Derived key obtained from Scrypt.kdf().
-     * @param   {string|Uint8Array|Buffer} passphrase - Passphrase originally used to generate key.
+     * @param   {string|Uint8Array} key - Derived key obtained from Scrypt.kdf().
+     * @param   {string|Uint8Array} passphrase - Passphrase originally used to generate key.
      * @returns {Promise<boolean>} True if key was generated from passphrase.
      *
      * @example
-     *   const key = (await Scrypt.kdf('my secret password', { logN: 15 })).toString('base64');
-     *   const ok = await Scrypt.verify(Buffer.from(key, 'base64'), 'my secret password');
+     *   const key = await Scrypt.kdf('my secret password', { logN: 15 });
+     *   const ok = await Scrypt.verify(key, 'my secret password');
      */
     static async verify(key, passphrase) {
+        // once v25+ is base requirement, can use Uint8Array.fromBase64(key) [@ v24 EOL Apr 2028?]
         const keyArr = typeof key == 'string' ? new Uint8Array([ ...atob(key) ].map(ch => ch.charCodeAt(0))) : key;
-        if (!(keyArr instanceof Uint8Array)) throw new TypeError(`key must be a Uint8Array/Buffer (received ${typeOf(keyArr)})`);
+        if (!(keyArr instanceof Uint8Array)) throw new TypeError(`key must be a string or Uint8Array (received ${typeOf(keyArr)})`);
         if (keyArr.length != 96) throw new RangeError('invalid key');
-        if (typeof passphrase!='string' && !ArrayBuffer.isView(passphrase)) throw new TypeError(`passphrase must be a string, TypedArray, or Buffer (received ${typeOf(passphrase)})`);
+        if (typeof passphrase!='string' && !ArrayBuffer.isView(passphrase)) throw new TypeError(`passphrase must be a string or TypedArray (received ${typeOf(passphrase)})`);
 
         // use the underlying ArrayBuffer to view key in different formats
         const keyBuff = keyArr.buffer.slice(keyArr.byteOffset, keyArr.byteOffset + keyArr.byteLength);
@@ -152,40 +149,38 @@ class Scrypt {
         // verify checksum of params & salt
 
         const prefix48 = new Uint8Array(keyBuff,  0, 48); // view onto struct.scrypt, struct.params, struct.salt
-        const checksumRecalcd = await crypto.subtle.digest('SHA-256', prefix48);
+        const prefix48hash = await crypto.subtle.digest('SHA-256', prefix48); // digest() returns ArrayBuffer, 32 bytes
+        const checksumRecalcd = prefix48hash.slice(0, 16);                    // 1st 16 bytes of SHA256(bytes 0–47)
 
-        if (!nodeCrypto.timingSafeEqual(struct.checksum, checksumRecalcd.slice(0, 16))) return false;
+        if (!nodeCrypto.timingSafeEqual(struct.checksum, new Uint8Array(checksumRecalcd))) return false;
+        // note timingSafeEqual() in Deno before 2.5.0 didn't accept ArrayBuffer; github.com/denoland/deno/issues/30759
 
         // rehash scrypt-derived key
-        try {
-            const params = {
-                N:      2**struct.params.logN.getUint8(0),
-                r:      struct.params.r.getUint32(0, false), // big-endian
-                p:      struct.params.p.getUint32(0, false), // big-endian
-                maxmem: 2**31-1, // 2GB is maximum allowed
-            };
 
-            // apply scrypt kdf to salt to derive hmac key
-            const hmacKey = await opensslScrypt(passphrase, struct.salt, 64, params);
+        // apply scrypt kdf to salt to derive hmac key (note opensslScrypt takes string, Buffer, TypedArray, etc)
+        const params = {
+            N:      2**struct.params.logN.getUint8(0),
+            r:      struct.params.r.getUint32(0, false), // big-endian
+            p:      struct.params.p.getUint32(0, false), // big-endian
+            maxmem: 2**31-1, // 2GB is maximum allowed
+        };
+        const hmacKey = await opensslScrypt(passphrase, struct.salt, 64, params);
 
-            // get hmachash of params, salt, & checksum, using 1st 32 bytes of scrypt hash as key
-            const prefix64 = new Uint8Array(keyBuff, 0, 64);
-            const algorithm = { name: 'HMAC', hash: 'SHA-256' };
-            const cryptoKey = await crypto.subtle.importKey('raw', hmacKey.slice(32), algorithm, false, [ 'sign' ]);
-            const hmacHash = await crypto.subtle.sign(algorithm.name, cryptoKey, prefix64);
+        // get hmachash of params, salt, & checksum, using 1st 32 bytes of scrypt hash as key
+        const prefix64 = new Uint8Array(keyBuff, 0, 64);
+        const algorithm = { name: 'HMAC', hash: 'SHA-256' };
+        const cryptoKey = await crypto.subtle.importKey('raw', hmacKey.slice(32), algorithm, false, [ 'sign' ]);
+        const hmacHash = await crypto.subtle.sign(algorithm.name, cryptoKey, prefix64); // sign() returns ArrayBuffer
 
-            // verify hash
-            return nodeCrypto.timingSafeEqual(hmacHash, struct.hmachash);
-        } catch (e) {
-            throw new Error(e.message); // localise error to this function [can't happen?]
-        }
+        // verify hash
+        return nodeCrypto.timingSafeEqual(new Uint8Array(hmacHash), struct.hmachash);
     }
 
 
     /**
      * View scrypt parameters which were used to derive key.
      *
-     * @param   {string|Uint8Array|Buffer} key - Derived base64 key obtained from Scrypt.kdf().
+     * @param   {string|Uint8Array} key - Derived key obtained from Scrypt.kdf().
      * @returns {object} Scrypt parameters logN, r, p.
      *
      * @example
@@ -193,8 +188,9 @@ class Scrypt {
      *   const params = Scrypt.viewParams(key); // => { logN: 15, r: 8, p: 1 }
      */
     static viewParams(key) {
+        // once v25+ is base requirement, can use Uint8Array.fromBase64(key) [@ v24 EOL Apr 2028?]
         const keyArr = typeof key == 'string' ? new Uint8Array([ ...atob(key) ].map(ch => ch.charCodeAt(0))) : key;
-        if (!(keyArr instanceof Uint8Array)) throw new TypeError(`key must be a Uint8Array/Buffer (received ${typeOf(keyArr)})`);
+        if (!(keyArr instanceof Uint8Array)) throw new TypeError(`key must be a Uint8Array (received ${typeOf(keyArr)})`);
         if (keyArr.length != 96) throw new RangeError('invalid key');
 
         // use the underlying ArrayBuffer to view key in structured format
@@ -246,11 +242,11 @@ class Scrypt {
      *   const params = Scrypt.pickParams(0.1); // => e.g. { logN: 15, r: 8, p: 1 }
      */
     static pickParams(maxtime, maxmem=os.totalmem(), maxmemfrac=0.5) {
-        if (maxmem==0 || maxmem==null) maxmem = os.totalmem();
+        if (maxmem==0 || maxmem==null) maxmem = os.totalmem(); // total amount of system memory
         if (maxmemfrac==0 || maxmemfrac>0.5) maxmemfrac = 0.5;
 
         // memory limit is memfrac · physical memory, no more than maxmem and no less than 1MiB
-        const physicalMemory = os.totalmem();
+        const physicalMemory = os.totalmem(); // total amount of system memory
         const memlimit = Math.max(Math.min(physicalMemory*maxmemfrac, maxmem), 1024*1024);
 
         // Colin Percival measures how many scrypts can be done in one clock tick using C/POSIX
@@ -302,7 +298,7 @@ class Scrypt {
  * Return more useful type description than 'typeof': javascriptweblog.wordpress.com/2011/08/08/
  */
 function typeOf(obj) {
-    return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
+    return ({}).toString.call(obj).match(/\s([a-zA-Z0-9]+)/)[1].toLowerCase();
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */

@@ -2,19 +2,13 @@
  * scrypt parameters
  */
 interface ScryptParamsKdf {
-  /**
-   * CPU/memory cost parameter.
-   */
+  /** CPU/memory cost parameter. */
   logN: number;
 
-  /**
-   * Block size parameter.
-   */
+  /** Block size parameter. */
   r?: number;
 
-  /**
-   * Parallelization parameter.
-   */
+  /** Parallelization parameter. */
   p?: number;
 }
 
@@ -28,36 +22,36 @@ export type ScryptParams = Required<ScryptParamsKdf>;
  *
  * @param passphrase Secret value such as a password from which key is to be derived.
  * @param params Scrypt parameters.
- * @returns Derived key (base-64 encoded).
+ * @returns Derived key.
  *
  * @example
  *   const key = await Scrypt.kdf('my secret password', { logN: 15 });
  */
-export declare function kdf(passphrase: string|Uint8Array|Buffer, params: Readonly<ScryptParamsKdf>): Promise<Buffer>;
+export declare function kdf(passphrase: string|Uint8Array, params: Readonly<ScryptParamsKdf>): Promise<Uint8Array>;
 
 /**
  * Check whether key was generated from passphrase.
  *
- * @param key Derived base64 key obtained from Scrypt.kdf().
+ * @param key Derived key obtained from Scrypt.kdf().
  * @param passphrase Passphrase originally used to generate key.
  * @returns True if key was generated from passphrase.
  *
  * @example
  *   const ok = await Scrypt.verify(key, 'my secret password');
  */
-export declare function verify(key: string|Uint8Array|Buffer, passphrase: string|Uint8Array|Buffer): Promise<boolean>;
+export declare function verify(key: string|Uint8Array, passphrase: string|Uint8Array): Promise<boolean>;
 
 /**
  * View scrypt parameters which were used to derive key.
  *
- * @param key Derived base64 key obtained from Scrypt.kdf().
+ * @param key Derived key obtained from Scrypt.kdf().
  * @returns Scrypt parameters logN, r, p.
  *
  * @example
  *   const key = await Scrypt.kdf('my secret password', { logN: 15 } );
  *   const params = Scrypt.viewParams(key); // => { logN: 15, r: 8, p: 1 }
  */
-export declare function viewParams(key: string|Uint8Array|Buffer): ScryptParams;
+export declare function viewParams(key: string|Uint8Array): ScryptParams;
 
 /**
  * Calculate scrypt parameters from maxtime, maxmem, maxmemfrac values.

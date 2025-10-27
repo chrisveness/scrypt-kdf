@@ -1,6 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 /* Tests for scrypt key derivation function using Deno.                                           */
-/*                                                        © 2024 Chris Veness / Movable Type Ltd  */
+/*                                                   © 2024-2025 Chris Veness / Movable Type Ltd  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
 import { assert, assertEquals, assertThrows, assertRejects } from 'jsr:@std/assert';
@@ -15,27 +15,27 @@ const key0salt = 'c2NyeXB0AAwAAAAIAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 Deno.test('Hash & verify (base64)', async function(t) {
 
-    await t.step('with just logN param, args as Buffer', async function() {
-        const keyBuff = await Scrypt.kdf(password, { logN: 12 });
-        assertEquals(Scrypt.viewParams(keyBuff), { logN: 12, r: 8, p: 1 });
-        assertEquals(await Scrypt.verify(keyBuff, password), true);
+    await t.step('with just logN param, with verify key as Uint8Array', async function() {
+        const key = await Scrypt.kdf(password, { logN: 12 });
+        assertEquals(Scrypt.viewParams(key), { logN: 12, r: 8, p: 1 });
+        assertEquals(await Scrypt.verify(key, password), true);
     });
 
-    await t.step('with logN, r, p params, args as Buffer', async function() {
-        const keyBuff = await Scrypt.kdf(password, { logN: 12, r: 9, p: 2 });
-        assertEquals(Scrypt.viewParams(keyBuff), { logN: 12, r: 9, p: 2 });
-        assertEquals(await Scrypt.verify(keyBuff, password), true);
+    await t.step('with logN, r, p params, with verify key as Uint8Array', async function() {
+        const key = await Scrypt.kdf(password, { logN: 12, r: 9, p: 2 });
+        assertEquals(Scrypt.viewParams(key), { logN: 12, r: 9, p: 2 });
+        assertEquals(await Scrypt.verify(key, password), true);
     });
 
-    await t.step('with args as strings', async function() {
-        const keyStr = (await Scrypt.kdf(password, { logN: '12', r: '8', p: '1' })).toString('base64');
-        assertEquals(Scrypt.viewParams(keyStr), { logN: 12, r: 8, p: 1 });
-        assertEquals(await Scrypt.verify(keyStr, password), true);
+    await t.step('with kdf params & verify key as strings', async function() {
+        const key = await Scrypt.kdf(password, { logN: '12', r: '8', p: '1' });
+        assertEquals(Scrypt.viewParams(key.toBase64()), { logN: 12, r: 8, p: 1 });
+        assertEquals(await Scrypt.verify(key.toBase64(), password), true);
     });
 
     await t.step('fails to verify with bad passphrase', async function() {
-        const keyStr = (await Scrypt.kdf(password, { logN: 12 })).toString('base64');
-        assertEquals(await Scrypt.verify(keyStr, 'wrong password'), false);
+        const key = await Scrypt.kdf(password, { logN: '12', r: '8', p: '1' });
+        assertEquals(await Scrypt.verify(key.toBase64(), 'wrong password'), false);
     });
 });
 
@@ -53,9 +53,9 @@ Deno.test('Args as String/Uint8Array/Buffer', async function(t) {
 
     await t.step('String', async function() {
         const pwStr = String.fromCharCode(...[ 99, 98, 97, 96, 95, 94, 94, 92, 91 ]);
-        const keyStr = (await Scrypt.kdf(pwStr, { logN: 12 })).toString('base64');
-        assertEquals(Scrypt.viewParams(keyStr), { logN: 12, r: 8, p: 1 });
-        assertEquals(await Scrypt.verify(keyStr, pwStr), true);
+        const key = await Scrypt.kdf(pwStr, { logN: 12 });
+        assertEquals(Scrypt.viewParams(key.toBase64()), { logN: 12, r: 8, p: 1 });
+        assertEquals(await Scrypt.verify(key.toBase64(), pwStr), true);
     });
 
     await t.step('Uint8Array', async function() {
@@ -65,11 +65,11 @@ Deno.test('Args as String/Uint8Array/Buffer', async function(t) {
         assertEquals(await Scrypt.verify(keyArr, pwArr), true);
     });
 
-    await t.step('Buffer', async function() {
+    await t.step('Node.js Buffer', async function() {
         const pwBuff = Buffer.from([ 99, 98, 97, 96, 95, 94, 94, 92, 91 ]);
-        const keyBuff = await Scrypt.kdf(pwBuff, { logN: 12 });
-        assertEquals(Scrypt.viewParams(keyBuff), { logN: 12, r: 8, p: 1 });
-        assertEquals(await Scrypt.verify(keyBuff, pwBuff), true);
+        const key = await Scrypt.kdf(pwBuff, { logN: 12 });
+        assertEquals(Scrypt.viewParams(key), { logN: 12, r: 8, p: 1 });
+        assertEquals(await Scrypt.verify(key, pwBuff), true);
     });
 });
 
@@ -145,27 +145,27 @@ Deno.test('Kdf errors', async function(t) {
     });
 
     await t.step('rejects on non-integer r', function() {
-        assertRejects(async () => await Scrypt.kdf(password, { logN: 12,  r: 8.8 }));
+        assertRejects(async () => await Scrypt.kdf(password, { logN: 12, r: 8.8 }));
     });
 
     await t.step('rejects on non-integer p', function() {
-        assertRejects(async () => await Scrypt.kdf(password, { logN: 12,  p: 1.1 }));
+        assertRejects(async () => await Scrypt.kdf(password, { logN: 12, p: 1.1 }));
     });
 
     await t.step('rejects on 0 r', function() {
-        assertRejects(async () => await Scrypt.kdf(password, { logN: 12,  r: 0 }));
+        assertRejects(async () => await Scrypt.kdf(password, { logN: 12, r: 0 }));
     });
 
     await t.step('rejects on 0 p', function() {
-        assertRejects(async () => await Scrypt.kdf(password, { logN: 12,  p: 0 }));
+        assertRejects(async () => await Scrypt.kdf(password, { logN: 12, p: 0 }));
     });
 
     await t.step('rejects on out-of-range r', function() {
-        assertRejects(async () => await Scrypt.kdf(password, { logN: 12,  r: 2**30 }));
+        assertRejects(async () => await Scrypt.kdf(password, { logN: 12, r: 2**30 }));
     });
 
     await t.step('rejects on out-of-range p', function() {
-        assertRejects(async () => await Scrypt.kdf(password, { logN: 12,  p: 2**30 }));
+        assertRejects(async () => await Scrypt.kdf(password, { logN: 12, p: 2**30 }));
     });
 
     await t.step('rejects on EVP PBE memory limit exceeded', function() {

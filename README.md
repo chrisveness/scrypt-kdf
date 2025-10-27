@@ -11,9 +11,9 @@ Scrypt is a ‘memory-hard’ algorithm, meaning that it will produce keys (hash
 
 It was originally developed by Colin Percival as part of the [Tarsnap](http://www.tarsnap.com/scrypt.html) file encryption utility. It is fully described in Percival’s paper [Stronger Key Derivation via Sequential Memory-Hard Functions](http://www.tarsnap.com/scrypt/scrypt.pdf), and is specified in [RFC 7841](https://tools.ietf.org/html/rfc7914).
 
-`scrypt-kdf` is a Node.js zero-dependency wrapper around the core [Node.js OpenSSL](https://nodejs.org/api/crypto.html#crypto_crypto_scrypt_password_salt_keylen_options_callback) implementation of scrypt, providing a `kdf` function and a `verify` function.
+`scrypt-kdf` is a zero-dependency JavaScript implementation of the [Node.js crypto](https://nodejs.org/api/crypto.html#crypto_crypto_scrypt_password_salt_keylen_options_callback) wrapper around the [OpenSSL EVP_KDF-SCRYPT](https://docs.openssl.org/master/man7/EVP_KDF-SCRYPT) function; it returns the KDF as a key incorporating[<sup>*</sup>](#key-format) the scrypt parameters and salt, enabling it to be stored in a form which can readily be used for verification.
 
-- the `kdf(passphrase, params)` function returns a key (together with scrypt parameters and salt), which can be stored for later verification
+- the `kdf(passphrase, params)` function returns a key (together with scrypt parameters and salt in Colin Percival’s [standard file header format](#key-format):), which can be stored for later verification
 - the `verify(key, passphrase)` function verifies that the stored key was derived from the supplied password.
 
 
@@ -28,21 +28,31 @@ Example usage
 
     import Scrypt from 'scrypt-kdf');
 
-    const keyBuf = await Scrypt.kdf('my secret pw', { logN: 15 });
-    const keyStr = keyBuf.toString('base64');
-    // keyStr is 128-char string which can be stored for subsequent verification
+    const key = await Scrypt.kdf('my secret pw', { logN: 15 }); // key is Uint8Array
+
+    // key can be used as Uint8Array, or converted to (base64) String or (Node.js) Buffer
+    const keyStr = key.toBase64();
+    const keyBuf = Buffer.from(key);
+
+    // the passphrase can also be supplied as a Uint8Array (including a Node.js Buffer)
+    const key = await Scrypt.kdf(new TextEncoder().encode('my secret pw'), { logN: 15 }); // Uint8Array
+    const key = await Scrypt.kdf(Buffer.from('my secret pw'), { logN: 15 });              // Node.js Buffer
+
+    // (note: Uint8Array.toBase64() is not available on Node.js < v24.8.1 or Deno < v2.5.0,
+    // so use btoa(new TextDecoder('utf8').decode(key)) on older versions)
 
 ### verifying
 
     import Scrypt from 'scrypt-kdf');
 
-    const user = await users.findOne({ email: req.body.email }); // for example
-    const keyBuf = Buffer.from(user.password, 'base64');
-    const ok = await Scrypt.verify(keyBuf, req.body.password);
+    const user = await users.findOne({ email: req.body.email });      // for example
+    const ok = await Scrypt.verify(user.password, req.body.password); // user.password is a base64 string
+
+    // key may be either (base64) string or Uint8Array, and passphrase may be either string or Uint8Array
 
 ### in Deno:
 
-    import Scrypt from 'npm:scrypt-kdf@^3';
+    import Scrypt from 'npm:scrypt-kdf@^4';
 
 API
 ---
@@ -51,26 +61,26 @@ API
 
 `Scrypt.kdf(passphrase, params)` – derive key from given passphrase (async).
 
-- `passphrase` is a user-supplied password string/TypedArray/Buffer to be hashed and stored.
+- `passphrase` is a user-supplied password string/Uint8Array to be hashed and stored.
 - `params` is an object with properties `logN`, `r`, `p`.
   - `logN` is a CPU/memory cost parameter: an integer *work factor* which determines the cost of the key derivation function, and hence the security of the stored key; for sub-100ms interactive logins, a [value of 15 is recommended](https://blog.filippo.io/the-scrypt-parameters/) for current (2017) hardware (increased from the original 2009 recommendation of 14)
   - `r` (optional) is a block size parameter, an integer conventionally fixed at 8.
   - `p` (optional) is a parallelization parameter, an integer conventionally fixed at 1.
-- returns: (promised) key as a Buffer which can be stored in any preferred format.
+- returns: (promised) key as a Uint8Array which can be stored in any preferred format.
 
 ### – verify
 
 `Scrypt.verify(key, passphrase)` – confirm key was derived from passphrase (async).
 
-- `key` is a Buffer obtained from `Scrypt.kdf()`.
-- `passphrase` is the password string/TypedArray/Buffer used to derive the stored `key`.
+- `key` is a Uint8Array obtained from `Scrypt.kdf()` (or corresponding base64 string / Node.js Buffer).
+- `passphrase` is the password string/Uint8Array/Buffer used to derive the stored `key`.
 - returns: (promised) `true` for successful verification, `false` otherwise.
 
 ### – view parameters
 
 `Scrypt.viewParams(key)` – return the `logN`, `r`, `p` parameters used to derive `key`.
 
-- `key` is a Buffer derived from `Scrypt.kdf()`.
+- `key` is a Uint8Array (or base64 string or Node.js Buffer) obtained from `Scrypt.kdf()`.
 - returns `{ logN, r, p }` object.
 
 ### – pick parameters
@@ -87,25 +97,19 @@ Percival’s calculation for optimal parameters can be used to verify Valsorda�
 Note that results are dependent on the computer the calculation is run on; calculated parameters may vary depending on computer specs & current loading.
 
 
-OpenSSL implementation
-----------------------
-
-`scrypt-kdf` is a wrapper around the [OpenSSL](https://www.openssl.org/1.1.1/man7/scrypt.html) implementation of scrypt made available through the Node.js [crypto module](https://nodejs.org/api/crypto.html#crypto_crypto_scrypt_password_salt_keylen_options_callback).
-
-
 Key format
 ----------
 
-The key is returned as a 96-byte Buffer/Uint8Array for maximum flexibility, in Colin Percival’s [standard file header format](https://github.com/Tarsnap/scrypt/blob/master/FORMAT):
+The key is returned as a 96-byte Uint8Array for maximum flexibility, in Colin Percival’s [standard file header format](https://github.com/Tarsnap/scrypt/blob/master/FORMAT):
 
 | offset | length | value
 | -----: | -----: | :----
 |      0 |      6 | ‘scrypt’
 |      6 |      1 | version [0]
-|      7 |      1 | log2(N)
-|      8 |      4 | r (big-endian integer)
-|     12 |      4 | p (big-endian integer)
-|     16 |     32 | salt
+|      7 |      1 | log2(N) (1..63)
+|      8 |      4 | r (big-endian integer; r·p < 2³⁰)
+|     12 |      4 | p (big-endian integer; r·p < 2³⁰)
+|     16 |     32 | (random) salt
 |     48 |     16 | checksum: first 16 bytes of SHA256(bytes 0–47)
 |     64 |     32 | HMAC-SHA256(bytes 0–63), with scrypt(password, salt, 64, { N, r, p }) as key
 
