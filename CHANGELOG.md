@@ -1,6 +1,29 @@
 # Changelog
 
-## Unreleased
+## [4.0.0] - 2025-10-27
+
+### Changed
+
+- BREAKING: `Scrypt.kdf()` returns (JavaScript) `Uint8Array` rather than (Node.js) `Buffer`
+- BREAKING: minimum Node version 19.0.0; minimum Deno version 2.5.0
+  - To upgrade:
+    - v3 (where `Scrypt.kdf()` returns `Buffer`):
+
+    ````js
+    const key = await Scrypt.kdf(password, { logN: 12, r: 8, p: 1 });
+    const keyStr = key.toString('base64'); // key as Base64 String
+    const keyArr = new Uint8Array(key);    // key as Uint8Array
+    ````
+
+    - v4 (where `Scrypt.kdf()` returns `Uint8Array`):
+
+    ````js
+    const key = await Scrypt.kdf(password, { logN: 12, r: 8, p: 1 });
+    const keyStr = key.toBase64();    // key as Base64 String
+    const keyBuff = Buffer.from(key); // key as Buffer
+    ````
+
+## [3.0.1] - 2024-10-20
 
 ### Changed
 
