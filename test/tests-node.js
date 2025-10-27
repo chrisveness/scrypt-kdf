@@ -30,8 +30,9 @@ describe('Hash & verify (base64)', function() {
 
     test('with kdf params & verify key as strings', async function() {
         const key = await Scrypt.kdf(password, { logN: '12', r: '8', p: '1' });
-        assert.deepEqual(Scrypt.viewParams(key.toBase64()), { logN: 12, r: 8, p: 1 });
-        assert.equal(await Scrypt.verify(key.toBase64(), password), true);
+        const b64 = btoa(Array.from(key, byte => String.fromCodePoint(byte)).join(''));
+        assert.deepEqual(Scrypt.viewParams(b64), { logN: 12, r: 8, p: 1 });
+        assert.equal(await Scrypt.verify(b64, password), true);
     });
 
     test('with verify key as Node.js Buffer', async function() {
@@ -42,7 +43,8 @@ describe('Hash & verify (base64)', function() {
 
     test('fails to verify with bad passphrase', async function() {
         const key = await Scrypt.kdf(password, { logN: '12', r: '8', p: '1' });
-        assert.equal(await Scrypt.verify(key.toBase64(), 'wrong password'), false);
+        const b64 = btoa(Array.from(key, byte => String.fromCodePoint(byte)).join(''));
+        assert.equal(await Scrypt.verify(b64, 'wrong password'), false);
     });
 });
 
@@ -61,8 +63,9 @@ describe('Args as String/Uint8Array/Buffer', function() {
     test('String', async function() {
         const pwStr = String.fromCharCode(...[ 99, 98, 97, 96, 95, 94, 94, 92, 91 ]);
         const key = await Scrypt.kdf(pwStr, { logN: 12 });
-        assert.deepEqual(Scrypt.viewParams(key.toBase64()), { logN: 12, r: 8, p: 1 });
-        assert.equal(await Scrypt.verify(key.toBase64(), pwStr), true);
+        const b64 = btoa(Array.from(key, byte => String.fromCodePoint(byte)).join(''));
+        assert.deepEqual(Scrypt.viewParams(b64), { logN: 12, r: 8, p: 1 });
+        assert.equal(await Scrypt.verify(b64, pwStr), true);
     });
 
     test('Uint8Array', async function() {
